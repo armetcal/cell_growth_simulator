@@ -2,36 +2,61 @@
 <html>
 <head>
     <title>Cell Growth Simulator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 10px;
             background-color: #f5f5f5;
+            padding: 0;
         }
+        
+        h1 {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 1.5rem;
+        }
+        
         .container {
             display: flex;
-            gap: 20px;
+            flex-direction: column;
+            gap: 15px;
         }
+        
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+            }
+        }
+        
         .panel {
-            flex: 1;
             background: white;
             border-radius: 8px;
             padding: 15px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 100%;
         }
+        
         canvas {
             border: 1px solid #333;
+            width: 100%;
+            display: block;
         }
+        
         #simulationCanvas {
             background-color: #000;
-            width: 100%;
             height: 400px;
         }
+        
         #graphCanvas {
             background-color: #1a1a2e;
-            width: 100%;
             height: 400px;
         }
+        
         .controls {
             margin: 10px 0;
             display: flex;
@@ -39,6 +64,7 @@
             gap: 10px;
             align-items: center;
         }
+        
         button {
             padding: 8px 15px;
             background-color: #4CAF50;
@@ -46,55 +72,77 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 0.9rem;
         }
+        
         button:hover {
             background-color: #45a049;
         }
+        
         label {
             display: flex;
             align-items: center;
             gap: 5px;
+            font-size: 0.9rem;
         }
+        
         .slider-container {
             display: flex;
             flex-direction: column;
-            min-width: 150px;
+            min-width: 120px;
+            flex: 1;
         }
+        
         .slider-container label {
             font-size: 12px;
             margin-bottom: 3px;
         }
+        
         .slider-container input[type="range"] {
             width: 100%;
         }
+        
         .slider-value {
             font-size: 12px;
             color: #666;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .stat-card {
-            background: #f8f9fa;
-            border-radius: 4px;
-            padding: 10px;
             text-align: center;
         }
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #FF6B6B;
-        }
-        .stat-label {
-            font-size: 12px;
-            color: #666;
-        }
+        
         h2 {
             margin-top: 0;
             color: #333;
+            font-size: 1.2rem;
+        }
+        
+        h3 {
+            font-size: 1.1rem;
+        }
+        
+        /* Mobile-specific adjustments */
+        @media (max-width: 767px) {
+            body {
+                margin: 5px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .slider-container {
+                min-width: 100%;
+            }
+            
+            button {
+                width: 100%;
+                padding: 12px;
+                font-size: 1rem;
+            }
+        }
+        
+        /* Hide detailed stats */
+        .stats-grid {
+            display: none;
         }
     </style>
 </head>
@@ -110,56 +158,13 @@
                 <button id="startBtn">Start</button>
                 <button id="pauseBtn">Pause</button>
                 <button id="resetBtn">Reset</button>
-                <label>
-                    <input type="checkbox" id="showFoodCheckbox" checked> Show Food Count
-                </label>
-                <label>
-                    <input type="checkbox" id="logScaleCheckbox"> Log Scale
-                </label>
-            </div>
-            <div id="stats">Cells: 1 | Food: 500 | Time: 0s</div>
-            
-            <h3>Detailed Statistics</h3>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value" id="totalCellsStat">1</div>
-                    <div class="stat-label">Total Cells</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="aliveCellsStat">1</div>
-                    <div class="stat-label">Alive Cells</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="foodStat">500</div>
-                    <div class="stat-label">Food Remaining</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="timeStat">0.0</div>
-                    <div class="stat-label">Time (seconds)</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="reproductionsStat">0</div>
-                    <div class="stat-label">Reproductions</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="deathsStat">0</div>
-                    <div class="stat-label">Cell Deaths</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="consumedFoodStat">0</div>
-                    <div class="stat-label">Food Consumed</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="avgLifetimeStat">0.0</div>
-                    <div class="stat-label">Avg Cell Lifetime</div>
-                </div>
             </div>
             
             <h3>Configuration</h3>
             <div class="controls">
                 <div class="slider-container">
                     <label for="initialCellsSlider">Initial Cells</label>
-                    <input type="range" id="initialCellsSlider" min="1" max="20" value="1">
+                    <input type="range" id="initialCellsSlider" min="1" max="10" value="1">
                     <span class="slider-value" id="initialCellsValue">1</span>
                 </div>
                 
@@ -170,9 +175,15 @@
                 </div>
                 
                 <div class="slider-container">
+                    <label for="lagTimeSlider">Lag Time (s)</label>
+                    <input type="range" id="lagTimeSlider" min="0" max="10" value="3">
+                    <span class="slider-value" id="lagTimeValue">3</span>
+                </div>
+                
+                <div class="slider-container">
                     <label for="starvationTimeSlider">Starvation Time (s)</label>
-                    <input type="range" id="starvationTimeSlider" min="1" max="20" value="5">
-                    <span class="slider-value" id="starvationTimeValue">5</span>
+                    <input type="range" id="starvationTimeSlider" min="1" max="20" value="10">
+                    <span class="slider-value" id="starvationTimeValue">10</span>
                 </div>
                 
                 <div class="slider-container">
@@ -186,6 +197,16 @@
         <div class="panel">
             <h2>Growth Curve</h2>
             <canvas id="graphCanvas"></canvas>
+
+            <!-- Graph controls -->
+            <div class="controls">
+                <label>
+                    <input type="checkbox" id="showFoodCheckbox" checked> Show Food Count
+                </label>
+                <label>
+                    <input type="checkbox" id="logScaleCheckbox"> Log Scale
+                </label>
+            </div>
         </div>
     </div>
 
@@ -199,9 +220,9 @@
         // Set canvas dimensions
         function resizeCanvases() {
             simCanvas.width = simCanvas.clientWidth;
-            simCanvas.height = 400;
+            simCanvas.height = simCanvas.clientHeight || 400;
             graphCanvas.width = graphCanvas.clientWidth;
-            graphCanvas.height = 400;
+            graphCanvas.height = graphCanvas.clientHeight || 400;
         }
         
         // Call on load and resize
@@ -210,7 +231,8 @@
         
         // Constants
         const CELL_SPEED = 100; // Constant speed for all cells
-        
+        const DOUBLING_TIME_VARIANCE = 0.1; // 10% variance in doubling times
+
         // Simulation state
         let simulationRunning = false;
         let simulationTime = 0;
@@ -224,6 +246,8 @@
         let useLogScale = false;
         let starvationTime = 5; // seconds before cell dies
         let reproductionThreshold = 3; // food needed to reproduce
+        let lagTime = 3; // seconds before cells can reproduce
+        let lastHistoryUpdate = 0; // Track when we last added to history
         
         // Statistics tracking
         let totalCellsCreated = 1;
@@ -243,29 +267,20 @@
         const startBtn = document.getElementById('startBtn');
         const pauseBtn = document.getElementById('pauseBtn');
         const resetBtn = document.getElementById('resetBtn');
-        const statsDiv = document.getElementById('stats');
         const showFoodCheckbox = document.getElementById('showFoodCheckbox');
         const logScaleCheckbox = document.getElementById('logScaleCheckbox');
         
         // Slider elements
         const initialCellsSlider = document.getElementById('initialCellsSlider');
         const foodUnitsSlider = document.getElementById('foodUnitsSlider');
+        const lagTimeSlider = document.getElementById('lagTimeSlider');
         const starvationTimeSlider = document.getElementById('starvationTimeSlider');
         const reproductionThresholdSlider = document.getElementById('reproductionThresholdSlider');
         const initialCellsValue = document.getElementById('initialCellsValue');
         const foodUnitsValue = document.getElementById('foodUnitsValue');
+        const lagTimeValue = document.getElementById('lagTimeValue');
         const starvationTimeValue = document.getElementById('starvationTimeValue');
         const reproductionThresholdValue = document.getElementById('reproductionThresholdValue');
-        
-        // Statistics elements
-        const totalCellsStat = document.getElementById('totalCellsStat');
-        const aliveCellsStat = document.getElementById('aliveCellsStat');
-        const foodStat = document.getElementById('foodStat');
-        const timeStat = document.getElementById('timeStat');
-        const reproductionsStat = document.getElementById('reproductionsStat');
-        const deathsStat = document.getElementById('deathsStat');
-        const consumedFoodStat = document.getElementById('consumedFoodStat');
-        const avgLifetimeStat = document.getElementById('avgLifetimeStat');
         
         // Event Listeners
         startBtn.addEventListener('click', startSimulation);
@@ -286,6 +301,11 @@
         foodUnitsSlider.addEventListener('input', function() {
             foodUnitsValue.textContent = this.value;
             config.foodUnits = parseInt(this.value);
+        });
+        
+        lagTimeSlider.addEventListener('input', function() {
+            lagTimeValue.textContent = this.value;
+            lagTime = parseInt(this.value);
         });
         
         starvationTimeSlider.addEventListener('input', function() {
@@ -314,6 +334,15 @@
                 this.consumedFood = 0;
                 this.age = 0;
                 this.lastFed = 0; // Time since last feeding
+                this.reproductionTimer = 0; // Timer for next reproduction
+                this.nextReproductionTime = this.getRandomDoublingTime(); // Random doubling time
+            }
+            
+            getRandomDoublingTime() {
+                // Generate a random doubling time with variance
+                const baseDoublingTime = 1.0; // Base doubling time in seconds
+                const variance = (Math.random() * 2 - 1) * DOUBLING_TIME_VARIANCE * baseDoublingTime;
+                return Math.max(0.1, baseDoublingTime + variance); // Ensure minimum time
             }
             
             update(deltaTime) {
@@ -342,6 +371,7 @@
                 // Age the cell
                 this.age += deltaTime;
                 this.lastFed += deltaTime;
+                this.reproductionTimer += deltaTime;
                 
                 // Consume food if available - check proximity to food
                 for (let i = 0; i < foods.length; i++) {
@@ -373,9 +403,13 @@
                     return 'die';
                 }
                 
-                // Reproduce when enough food consumed
-                if (this.consumedFood >= reproductionThreshold) {
+                // Reproduce when enough food consumed, past lag time, and reproduction timer expired
+                if (this.consumedFood >= reproductionThreshold && 
+                    (simulationTime - this.birthTime) >= lagTime && 
+                    this.reproductionTimer >= this.nextReproductionTime) {
                     this.consumedFood = 0;
+                    this.reproductionTimer = 0; // Reset reproduction timer
+                    this.nextReproductionTime = this.getRandomDoublingTime(); // Set next reproduction time
                     totalReproductions++;
                     totalCellsCreated++;
                     return new Cell(this.x, this.y);
@@ -387,7 +421,17 @@
             draw(ctx) {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = '#FF6B6B'; // Coral red
+                
+                // Color based on age and lag time
+                const ageRatio = (simulationTime - this.birthTime) / lagTime;
+                if (ageRatio < 1) {
+                    // In lag phase - lighter color
+                    const intensity = 100 + Math.floor(ageRatio * 100);
+                    ctx.fillStyle = `rgb(255, ${intensity}, ${intensity})`; // Lighter red
+                } else {
+                    // Post-lag phase - full color
+                    ctx.fillStyle = '#FF6B6B'; // Coral red
+                }
                 ctx.fill();
                 
                 // Draw nucleus
@@ -403,6 +447,7 @@
             cells = [];
             foods = [];
             simulationTime = 0;
+            lastHistoryUpdate = 0;
             cellCount = config.initialCells;
             foodCount = config.foodUnits;
             growthHistory = [{time: 0, cells: cellCount, food: foodCount}];
@@ -433,7 +478,6 @@
                 });
             }
             
-            updateStats();
             draw();
             drawGraph();
         }
@@ -468,15 +512,15 @@
             foodCount = Math.max(0, foodCount);
             
             // Add to history every 0.5 seconds
-            if (simulationTime - (growthHistory[growthHistory.length - 1]?.time || 0) > 0.5) {
+            if (simulationTime - lastHistoryUpdate > 0.5) {
                 growthHistory.push({
                     time: simulationTime,
                     cells: cellCount,
                     food: foodCount
                 });
+                lastHistoryUpdate = simulationTime;
             }
             
-            updateStats();
             draw();
             drawGraph();
             
@@ -494,9 +538,9 @@
             simCtx.fillStyle = 'black';
             simCtx.fillRect(0, 0, simCanvas.width, simCanvas.height);
             
-            // Draw ONLY the first foodCount food particles as yellow dots
+            // Draw food particles
             simCtx.fillStyle = '#FFE66D'; // Yellow
-            for (let i = 0; i < foods.length && i < foodCount; i++) {
+            for (let i = 0; i < foods.length; i++) {
                 const food = foods[i];
                 if (!food.consumed) {
                     simCtx.beginPath();
@@ -617,7 +661,7 @@
             growthHistory.forEach((point, index) => {
                 const x = padding + (point.time / maxTime) * (width - 2 * padding);
                 const value = useLogScale ? Math.log10(Math.max(1, point.cells)) : point.cells;
-                const y = height - padding - (value / Math.max(1, maxCellValue)) * (height - 2 * padding);
+                const y = height - padding - (value / (maxCellValue || 1)) * (height - 2 * padding);
                 
                 if (index === 0) {
                     ctx.moveTo(x, y);
@@ -637,7 +681,7 @@
                 growthHistory.forEach((point, index) => {
                     const x = padding + (point.time / maxTime) * (width - 2 * padding);
                     const value = useLogScale ? Math.log10(Math.max(1, point.food)) : point.food;
-                    const y = height - padding - (value / Math.max(1, maxFoodValue)) * (height - 2 * padding);
+                    const y = height - padding - (value / (maxFoodValue || 1)) * (height - 2 * padding);
                     
                     if (index === 0) {
                         ctx.moveTo(x, y);
@@ -658,25 +702,6 @@
                 ctx.fillStyle = '#FFE66D'; // Yellow
                 ctx.fillText('Food', width - 80, 40);
             }
-        }
-        
-        // Utility functions
-        function updateStats() {
-            // Update main stats display
-            statsDiv.textContent = `Cells: ${Math.floor(cellCount)} | Food: ${Math.floor(foodCount)} | Time: ${simulationTime.toFixed(1)}s`;
-            
-            // Update detailed statistics
-            totalCellsStat.textContent = totalCellsCreated;
-            aliveCellsStat.textContent = cellCount;
-            foodStat.textContent = Math.floor(foodCount);
-            timeStat.textContent = simulationTime.toFixed(1);
-            reproductionsStat.textContent = totalReproductions;
-            deathsStat.textContent = totalCellDeaths;
-            consumedFoodStat.textContent = totalFoodConsumed;
-            
-            // Calculate average lifetime
-            const avgLifetime = cellDeathCount > 0 ? cellLifetimeSum / cellDeathCount : 0;
-            avgLifetimeStat.textContent = avgLifetime.toFixed(1);
         }
         
         function startSimulation() {
