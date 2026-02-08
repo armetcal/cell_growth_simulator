@@ -63,6 +63,11 @@
             flex-wrap: wrap;
             gap: 10px;
             align-items: center;
+            font-size: 18px;
+        }
+
+        .controls label {
+            font-size: 18px !important;
         }
         
         button {
@@ -72,7 +77,7 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 18px;
         }
         
         button:hover {
@@ -94,7 +99,7 @@
         }
         
         .slider-container label {
-            font-size: 12px;
+            font-size: 18px;
             margin-bottom: 3px;
         }
         
@@ -103,7 +108,7 @@
         }
         
         .slider-value {
-            font-size: 12px;
+            font-size: 18px;
             color: #666;
             text-align: center;
         }
@@ -144,6 +149,11 @@
         .stats-grid {
             display: none;
         }
+
+        /* Hide certain sliders */
+        .hidden-slider {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -153,14 +163,8 @@
         <div class="panel">
             <h2>Simulation</h2>
             <canvas id="simulationCanvas"></canvas>
-            <br><br>
-            <div class="controls">
-                <button id="startBtn">Start</button>
-                <button id="pauseBtn">Pause</button>
-                <button id="resetBtn">Reset</button>
-            </div>
             
-            <h3>Configuration</h3>
+            <!--<h3>Configuration</h3>-->
             <div class="controls">
                 <div class="slider-container">
                     <label for="initialCellsSlider">Initial Cells</label>
@@ -168,30 +172,38 @@
                     <span class="slider-value" id="initialCellsValue">1</span>
                 </div>
                 
-                <div class="slider-container">
+                <div class="slider-container hidden-slider">
                     <label for="foodUnitsSlider">Food Units</label>
                     <input type="range" id="foodUnitsSlider" min="50" max="1000" value="500">
                     <span class="slider-value" id="foodUnitsValue">500</span>
                 </div>
                 
-                <div class="slider-container">
+                <div class="slider-container hidden-slider">
                     <label for="lagTimeSlider">Lag Time (s)</label>
                     <input type="range" id="lagTimeSlider" min="0" max="10" value="3">
                     <span class="slider-value" id="lagTimeValue">3</span>
                 </div>
                 
-                <div class="slider-container">
+                <div class="slider-container hidden-slider">
                     <label for="starvationTimeSlider">Starvation Time (s)</label>
                     <input type="range" id="starvationTimeSlider" min="1" max="20" value="10">
                     <span class="slider-value" id="starvationTimeValue">10</span>
                 </div>
-                
-                <div class="slider-container">
+            
+                <div class="slider-container hidden-slider">
                     <label for="reproductionThresholdSlider">Food to Reproduce</label>
                     <input type="range" id="reproductionThresholdSlider" min="1" max="10" value="3">
                     <span class="slider-value" id="reproductionThresholdValue">3</span>
                 </div>
+                
             </div>
+
+            <div class="controls">
+                <button id="startBtn">Start</button>
+                <button id="pauseBtn">Pause</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
         </div>
         
         <div class="panel">
@@ -204,7 +216,7 @@
                     <input type="checkbox" id="showFoodCheckbox" checked> Show Food Count
                 </label>
                 <label>
-                    <input type="checkbox" id="logScaleCheckbox"> Log Scale
+                    <input type="checkbox" id="logScaleCheckbox" checked> Log Scale
                 </label>
             </div>
         </div>
@@ -243,8 +255,8 @@
         let foods = [];
         let animationId = null;
         let growthHistory = [{time: 0, cells: 1, food: 500}];
-        let useLogScale = false;
-        let starvationTime = 5; // seconds before cell dies
+        let useLogScale = true;
+        let starvationTime = 10; // seconds before cell dies
         let reproductionThreshold = 3; // food needed to reproduce
         let lagTime = 3; // seconds before cells can reproduce
         let lastHistoryUpdate = 0; // Track when we last added to history
