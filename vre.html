@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Virtual Research Experience</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+            background-color: #f5f5f5;
+            padding: 0;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+        }
+        
+        /* Hamburger Menu Styles */
+        .menu-toggle {
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            width: 30px;
+            gap: 5px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .menu-toggle span {
+            background-color: #333;
+            height: 4px;
+            border-radius: 2px;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+        
+        .menu-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .menu-content {
+            display: none;
+            position: absolute;
+            top: 40px;
+            right: 0;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            min-width: 200px;
+            z-index: 5;
+        }
+        
+        .menu-content a {
+            display: block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .menu-content a:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .menu-content a.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .menu-container:hover .menu-content {
+            display: block;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+            }
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 100%;
+            flex: 1;
+        }
+        
+        .simulation-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        @media (min-width: 768px) {
+            .simulation-container {
+                flex-direction: row;
+            }
+        }
+        
+        .simulation-window {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 100%;
+            position: relative;
+            flex: 1;
+        }
+        
+        .simulation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .window-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .food-indicator-container {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        
+        .food-indicator {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .food-default {
+            background-color: #FFE66D;
+            color: #333;
+        }
+        
+        .food-oil {
+            background-color: #FF9AA2;
+            color: #333;
+        }
+        
+        .food-none {
+            background-color: #ddd;
+            color: #777;
+        }
+        
+        canvas {
+            border: 1px solid #333;
+            width: 100%;
+            display: block;
+        }
+        
+        .simulationCanvas {
+            background-color: #000;
+            height: 200px;
+        }
+        
+        .graphCanvas {
+            background-color: #1a1a2e;
+            height: 200px;
+            border-top: 1px solid white; /* White line divider */
+        }
+        
+        .food-types-container {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+        
+        .food-type {
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: grab;
+            font-weight: bold;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+        
+        .food-type:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+        
+        .food-default-type {
+            background-color: #FFE66D;
+            color: #333;
+        }
+        
+        .food-oil-type {
+            background-color: #FF9AA2;
+            color: #333;
+        }
+        
+        .dragging {
+            opacity: 0.5;
+        }
+        
+        .controls {
+            margin: 10px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            font-size: 18px;
+        }
+
+        .controls label {
+            font-size: 18px !important;
+        }
+        
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .remove-food-btn {
+            background-color: #f44336;
+            padding: 3px 8px;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+        
+        .remove-food-btn:hover {
+            background-color: #d32f2f;
+        }
+        
+        label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            min-width: 120px;
+            flex: 1;
+        }
+        
+        .slider-container label {
+            font-size: 18px;
+            margin-bottom: 3px;
+        }
+        
+        .slider-container input[type="range"] {
+            width: 100%;
+        }
+        
+        .slider-value {
+            font-size: 18px;
+            color: #666;
+            text-align: center;
+        }
+        
+        h2 {
+            margin-top: 0;
+            color: #333;
+            font-size: 1.2rem;
+        }
+        
+        h3 {
+            font-size: 1.1rem;
+        }
+        
+        /* Mobile-specific adjustments */
+        @media (max-width: 767px) {
+            body {
+                margin: 5px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .slider-container {
+                min-width: 100%;
+            }
+            
+            button {
+                width: 100%;
+                padding: 12px;
+                font-size: 1rem;
+            }
+        }
+        
+        /* Quiz Section */
+        .quiz-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .quiz-section.active {
+            display: block;
+        }
+        
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .quiz-option {
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .quiz-option:hover {
+            background: #e0e0e0;
+        }
+        
+        .quiz-option.selected {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .result-section {
+            display: none;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .result-section.show {
+            display: block;
+        }
+        
+        /* Status indicator for simulations */
+        .status-indicator {
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        
+        .status-running {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .status-paused {
+            background-color: #FF9800;
+            color: white;
+        }
+        
+        .status-stopped {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>
+        <div>Virtual Research Experience</div>
+        <div class="menu-container">
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="menu-content">
+                <a href="index.html">Cell Growth Simulator</a>
+                <a href="#" class="active">Virtual Research Experience</a>
+            </div>
+        </div>
+    </h1>
+    
+    <div class="food-types-container">
+        <div class="food-type food-default-type" draggable="true" data-type="default">
+            Default Food
+        </div>
+        <div class="food-type food-oil-type" draggable="true" data-type="oil">
+            Oil Food
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="simulation-container">
+            <div class="simulation-window">
+                <div class="simulation-header">
+                    <div class="window-title">Experiment A</div>
+                    <div class="status-indicator status-paused" id="statusA">PAUSED</div>
+                    <div class="food-indicator-container">
+                        <div class="food-indicator food-none" id="foodIndicatorA1">Add Default Food</div>
+                        <div class="food-indicator food-none" id="foodIndicatorA2">Add Oil Food</div>
+                    </div>
+                    <div>
+                        <button class="remove-food-btn" id="removeDefaultA" style="display: none;">Remove Default</button>
+                        <button class="remove-food-btn" id="removeOilA" style="display: none;">Remove Oil</button>
+                    </div>
+                </div>
+                <canvas id="simulationCanvasA" class="simulationCanvas"></canvas>
+                <canvas id="graphCanvasA" class="graphCanvas"></canvas>
+                <div class="controls">
+                    <button id="startBtnA">Start</button>
+                    <button id="pauseBtnA">Pause</button>
+                    <button id="resetBtnA">Reset</button>
+                </div>
+            </div>
+            
+            <div class="simulation-window">
+                <div class="simulation-header">
+                    <div class="window-title">Experiment B</div>
+                    <div class="status-indicator status-paused" id="statusB">PAUSED</div>
+                    <div class="food-indicator-container">
+                        <div class="food-indicator food-none" id="foodIndicatorB1">Add Default Food</div>
+                        <div class="food-indicator food-none" id="foodIndicatorB2">Add Oil Food</div>
+                    </div>
+                    <div>
+                        <button class="remove-food-btn" id="removeDefaultB" style="display: none;">Remove Default</button>
+                        <button class="remove-food-btn" id="removeOilB" style="display: none;">Remove Oil</button>
+                    </div>
+                </div>
+                <canvas id="simulationCanvasB" class="simulationCanvas"></canvas>
+                <canvas id="graphCanvasB" class="graphCanvas"></canvas>
+                <div class="controls">
+                    <button id="startBtnB">Start</button>
+                    <button id="pauseBtnB">Pause</button>
+                    <button id="resetBtnB">Reset</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="simulation-container">
+            <div class="simulation-window">
+                <div class="simulation-header">
+                    <div class="window-title">Experiment C</div>
+                    <div class="status-indicator status-paused" id="statusC">PAUSED</div>
+                    <div class="food-indicator-container">
+                        <div class="food-indicator food-none" id="foodIndicatorC1">Add Default Food</div>
+                        <div class="food-indicator food-none" id="foodIndicatorC2">Add Oil Food</div>
+                    </div>
+                    <div>
+                        <button class="remove-food-btn" id="removeDefaultC" style="display: none;">Remove Default</button>
+                        <button class="remove-food-btn" id="removeOilC" style="display: none;">Remove Oil</button>
+                    </div>
+                </div>
+                <canvas id="simulationCanvasC" class="simulationCanvas"></canvas>
+                <canvas id="graphCanvasC" class="graphCanvas"></canvas>
+                <div class="controls">
+                    <button id="startBtnC">Start</button>
+                    <button id="pauseBtnC">Pause</button>
+                    <button id="resetBtnC">Reset</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2>Instructions</h2>
+                <p>Drag food types to experiment windows to load them.</p>
+                <p>Windows can have both food types loaded simultaneously.</p>
+                <p>Each experiment runs independently with its loaded food types.</p>
+                <p>After running experiments, you'll be quizzed on your cell type.</p>
+                
+                <div class="controls">
+                    <button id="startAllBtn">Start All</button>
+                    <button id="pauseAllBtn">Pause All</button>
+                    <button id="resetAllBtn">Reset All</button>
+                </div>
+                
+                <div class="controls">
+                    <label>
+                        <input type="checkbox" id="showFoodCheckbox" checked> Show Food Count
+                    </label>
+                    <label>
+                        <input type="checkbox" id="logScaleCheckbox" checked> Log Scale
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="quiz-section" id="quizSection">
+        <h2>Research Quiz</h2>
+        <p>Based on your experiments, which type of cell do you think you were given?</p>
+        
+        <div class="quiz-options">
+            <div class="quiz-option" data-type="default-only">
+                Cell Type A: Eats only Default food
+            </div>
+            <div class="quiz-option" data-type="default-prefer-oil">
+                Cell Type B: Eats Default but prefers Oil
+            </div>
+            <div class="quiz-option" data-type="oil-prefer-default">
+                Cell Type C: Eats Oil but prefers Default
+            </div>
+            <div class="quiz-option" data-type="both-no-preference">
+                Cell Type D: Eats both with no preference
+            </div>
+        </div>
+        
+        <button id="submitQuizBtn">Submit Answer</button>
+    </div>
+    
+    <div class="result-section" id="resultSection">
+        <!-- Results will be shown here -->
+    </div>
+
+    <script>
+        // Canvas setup for all simulations
+        const canvases = {
+            A: {
+                sim: document.getElementById('simulationCanvasA'),
+                graph: document.getElementById('graphCanvasA')
+            },
+            B: {
+                sim: document.getElementById('simulationCanvasB'),
+                graph: document.getElementById('graphCanvasB')
+            },
+            C: {
+                sim: document.getElementById('simulationCanvasC'),
+                graph: document.getElementById('graphCanvasC')
+            }
+        };
+        
+        const contexts = {};
+        
+        // Initialize all canvas contexts
+        Object.keys(canvases).forEach(key => {
+            contexts[key] = {
+                sim: canvases[key].sim.getContext('2d'),
+                graph: canvases[key].graph.getContext('2d')
+            };
+        });
+        
+        // Set canvas dimensions
+        function resizeCanvases() {
+            Object.keys(canvases).forEach(key => {
+                const simCanvas = canvases[key].sim;
+                const graphCanvas = canvases[key].graph;
+                
+                simCanvas.width = simCanvas.clientWidth;
+                simCanvas.height = simCanvas.clientHeight || 200;
+                graphCanvas.width = graphCanvas.clientWidth;
+                graphCanvas.height = graphCanvas.clientHeight || 200;
+            });
+        }
+        
+        // Call on load and resize
+        window.addEventListener('load', resizeCanvases);
+        window.addEventListener('resize', resizeCanvases);
+        
+        // Constants
+        const CELL_SPEED = 50; // Constant speed for all cells
+        const TOTAL_FOOD_COUNT = 100; // Total food particles per experiment
+        const PREFERRED_FOOD_THRESHOLD = 0.9; // 90% threshold
+        const INITIAL_LAG_TIME = 5; // Increased initial lag time
+        const PRIMARY_FOOD_REPRODUCTION_THRESHOLD = 3; // Dots needed for reproduction on preferred food
+        const SECONDARY_FOOD_REPRODUCTION_THRESHOLD = 5; // Dots needed for reproduction on secondary food
+        let globalMaxCells = 1; // Normalizing y axis of the graph to the maximum cell count across all simulations
+        let globalMaxFood = 1; // Normalizing y axis of the graph to the maximum food count across all simulations
+        
+        // Simulation state for each window
+        const simulations = {
+            A: { 
+                running: false, 
+                time: 0, 
+                cells: [], 
+                foods: [], 
+                history: [],
+                lastTimestamp: 0,
+                animationId: null,
+                cellType: null,
+                initialFoodCounts: {default: 0, oil: 0},
+                dataGenerated: false
+            },
+            B: { 
+                running: false, 
+                time: 0, 
+                cells: [], 
+                foods: [], 
+                history: [],
+                lastTimestamp: 0,
+                animationId: null,
+                cellType: null,
+                initialFoodCounts: {default: 0, oil: 0},
+                dataGenerated: false
+            },
+            C: { 
+                running: false, 
+                time: 0, 
+                cells: [], 
+                foods: [], 
+                history: [],
+                lastTimestamp: 0,
+                animationId: null,
+                cellType: null,
+                initialFoodCounts: {default: 0, oil: 0},
+                dataGenerated: false
+            }
+        };
+        
+        // Status indicators
+        const statusIndicators = {
+            A: document.getElementById('statusA'),
+            B: document.getElementById('statusB'),
+            C: document.getElementById('statusC')
+        };
+        
+        // Food loading state (initially no food loaded)
+        const foodLoadState = {
+            A: { default: false, oil: false },
+            B: { default: false, oil: false },
+            C: { default: false, oil: false }
+        };
+        
+        // Cell types (randomly assigned - same for all windows)
+        const cellTypes = ['default-only', 'default-prefer-oil', 'oil-prefer-default', 'both-no-preference'];
+        const userCellType = cellTypes[Math.floor(Math.random() * cellTypes.length)];
+        
+        // DOM Elements
+        const foodIndicators = {
+            A: {
+                default: document.getElementById('foodIndicatorA1'),
+                oil: document.getElementById('foodIndicatorA2')
+            },
+            B: {
+                default: document.getElementById('foodIndicatorB1'),
+                oil: document.getElementById('foodIndicatorB2')
+            },
+            C: {
+                default: document.getElementById('foodIndicatorC1'),
+                oil: document.getElementById('foodIndicatorC2')
+            }
+        };
+        
+        const removeFoodButtons = {
+            A: {
+                default: document.getElementById('removeDefaultA'),
+                oil: document.getElementById('removeOilA')
+            },
+            B: {
+                default: document.getElementById('removeDefaultB'),
+                oil: document.getElementById('removeOilB')
+            },
+            C: {
+                default: document.getElementById('removeDefaultC'),
+                oil: document.getElementById('removeOilC')
+            }
+        };
+        
+        // Drag and drop functionality
+        const foodTypes = document.querySelectorAll('.food-type');
+        
+        foodTypes.forEach(food => {
+            food.addEventListener('dragstart', function(e) {
+                e.dataTransfer.setData('text/plain', this.dataset.type);
+                this.classList.add('dragging');
+            });
+            
+            food.addEventListener('dragend', function() {
+                this.classList.remove('dragging');
+            });
+        });
+        
+        // Make simulation windows drop targets
+        Object.keys(foodIndicators).forEach(key => {
+            const windowElement = foodIndicators[key].default.closest('.simulation-window');
+            
+            windowElement.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+            
+            windowElement.addEventListener('drop', function(e) {
+                e.preventDefault();
+                const foodType = e.dataTransfer.getData('text/plain');
+                loadFoodToWindow(key, foodType);
+            });
+        });
+        
+        // Load food to a simulation window
+        function loadFoodToWindow(windowKey, foodType) {
+            // Prevent modification if data has been generated
+            if (simulations[windowKey].dataGenerated) {
+                alert("Cannot modify food after simulation has started. Please reset first.");
+                return;
+            }
+            
+            // Prevent adding food that's already loaded
+            if (foodLoadState[windowKey][foodType]) {
+                return;
+            }
+            
+            // Mark food as loaded
+            foodLoadState[windowKey][foodType] = true;
+            
+            // Update UI
+            if (foodType === 'default') {
+                foodIndicators[windowKey].default.textContent = 'Default Food Loaded';
+                foodIndicators[windowKey].default.className = 'food-indicator food-default';
+                removeFoodButtons[windowKey].default.style.display = 'inline-block';
+            } else if (foodType === 'oil') {
+                foodIndicators[windowKey].oil.textContent = 'Oil Food Loaded';
+                foodIndicators[windowKey].oil.className = 'food-indicator food-oil';
+                removeFoodButtons[windowKey].oil.style.display = 'inline-block';
+            }
+            
+            // Add food particles to simulation if running or already has data
+            if (simulations[windowKey].running || simulations[windowKey].dataGenerated) {
+                addFoodToSimulation(windowKey, foodType);
+            }
+        }
+        
+        // Add food particles to simulation
+        function addFoodToSimulation(windowKey, foodType) {
+            const sim = simulations[windowKey];
+            
+            // Calculate food count based on how many food types are loaded
+            let foodCountPerType = TOTAL_FOOD_COUNT;
+            const loadedFoodTypes = Object.values(foodLoadState[windowKey]).filter(Boolean).length;
+            if (loadedFoodTypes > 1) {
+                foodCountPerType = Math.floor(TOTAL_FOOD_COUNT / loadedFoodTypes);
+            }
+            
+            for (let i = 0; i < foodCountPerType; i++) {
+                sim.foods.push({
+                    x: Math.random() * canvases[windowKey].sim.width,
+                    y: Math.random() * canvases[windowKey].sim.height,
+                    type: foodType,
+                    consumed: false
+                });
+            }
+            draw(windowKey);
+        }
+        
+        // Remove food from window
+        Object.keys(removeFoodButtons).forEach(windowKey => {
+            Object.keys(removeFoodButtons[windowKey]).forEach(foodType => {
+                removeFoodButtons[windowKey][foodType].addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    // Prevent modification if data has been generated
+                    if (simulations[windowKey].dataGenerated) {
+                        alert("Cannot modify food after simulation has started. Please reset first.");
+                        return;
+                    }
+                    
+                    foodLoadState[windowKey][foodType] = false;
+                    
+                    if (foodType === 'default') {
+                        foodIndicators[windowKey].default.textContent = 'Add Default Food';
+                        foodIndicators[windowKey].default.className = 'food-indicator food-none';
+                        this.style.display = 'none';
+                    } else if (foodType === 'oil') {
+                        foodIndicators[windowKey].oil.textContent = 'Add Oil Food';
+                        foodIndicators[windowKey].oil.className = 'food-indicator food-none';
+                        this.style.display = 'none';
+                    }
+                    
+                    // Remove food particles from simulation
+                    const sim = simulations[windowKey];
+                    sim.foods = sim.foods.filter(food => food.type !== foodType);
+                    draw(windowKey);
+                });
+            });
+        });
+        
+        // Cell class with food preferences
+        class Cell {
+            constructor(x, y, cellType) {
+                this.x = x;
+                this.y = y;
+                this.size = 8;
+                
+                // Constant speed for all cells
+                const angle = Math.random() * Math.PI * 2;
+                this.vx = Math.cos(angle) * CELL_SPEED;
+                this.vy = Math.sin(angle) * CELL_SPEED;
+                
+                this.cellType = cellType; // 'default-only', 'default-prefer-oil', 'oil-prefer-default', 'both-no-preference'
+                this.consumedFood = { default: 0, oil: 0 };
+                this.lastFedType = null;
+                this.starvationTimer = 0;
+                this.birthTime = 0; // Will be set when simulation starts
+                this.usingSecondaryFood = false; // Track if currently using secondary food
+            }
+            
+            update(canvas, deltaTime, foods, simulationTime, windowKey) {
+                // Set birth time if not already set
+                if (this.birthTime === 0) {
+                    this.birthTime = simulationTime;
+                }
+                
+                // Movement (constant speed)
+                this.x += this.vx * deltaTime;
+                this.y += this.vy * deltaTime;
+                
+                // Boundary collision
+                if (this.x < this.size) {
+                    this.x = this.size;
+                    this.vx = Math.abs(this.vx);
+                }
+                if (this.x > canvas.width - this.size) {
+                    this.x = canvas.width - this.size;
+                    this.vx = -Math.abs(this.vx);
+                }
+                if (this.y < this.size) {
+                    this.y = this.size;
+                    this.vy = Math.abs(this.vy);
+                }
+                if (this.y > canvas.height - this.size) {
+                    this.y = canvas.height - this.size;
+                    this.vy = -Math.abs(this.vy);
+                }
+                
+                // Age timers
+                this.starvationTimer += deltaTime;
+                
+                // Consume food based on cell type preference
+                return this.consumeFood(foods, deltaTime, simulationTime, windowKey);
+            }
+            
+            consumeFood(foods, deltaTime, simulationTime, windowKey) {
+                // Find closest food based on preference
+                let closestFood = null;
+                let closestDistance = Infinity;
+                
+                const sim = simulations[windowKey];
+                const foodCounts = this.getFoodCounts(sim.foods);
+                
+                for (let i = 0; i < foods.length; i++) {
+                    const food = foods[i];
+                    if (!food.consumed) {
+                        const dx = this.x - food.x;
+                        const dy = this.y - food.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        // Preference logic based on food availability
+                        if (this.shouldEatFood(food.type, foodCounts, sim.initialFoodCounts)) {
+                            if (distance < closestDistance && distance < this.size + 5) {
+                                closestDistance = distance;
+                                closestFood = food;
+                            }
+                        }
+                    }
+                }
+                
+                // Consume the food if found
+                if (closestFood) {
+                    closestFood.consumed = true;
+                    this.consumedFood[closestFood.type]++;
+                    this.lastFedType = closestFood.type;
+                    this.starvationTimer = 0;
+                    
+                    // Update secondary food usage
+                    this.updateSecondaryFoodUsage(closestFood.type, foodCounts, sim.initialFoodCounts);
+                }
+                
+                // Die if starved too long
+                if (this.starvationTimer > 8) { // 5 seconds starvation limit
+                    return 'die';
+                }
+                
+                // Reproduce based on food consumption
+                let shouldReproduce = false;
+                let foodTypeToReset = null;
+                
+                // Check reproduction conditions based on cell type
+                switch (this.cellType) {
+                    case 'default-only':
+                        // Only eats default food
+                        if (this.consumedFood.default >= PRIMARY_FOOD_REPRODUCTION_THRESHOLD) {
+                            shouldReproduce = true;
+                            foodTypeToReset = 'default';
+                        }
+                        break;
+                        
+                    case 'default-prefer-oil':
+                        // Prefers oil, then default
+                        if (this.usingSecondaryFood) {
+                            // Using secondary (default) food
+                            if (this.consumedFood.default >= SECONDARY_FOOD_REPRODUCTION_THRESHOLD) {
+                                shouldReproduce = true;
+                                foodTypeToReset = 'default';
+                            }
+                        } else {
+                            // Using primary (oil) food
+                            if (this.consumedFood.oil >= PRIMARY_FOOD_REPRODUCTION_THRESHOLD) {
+                                shouldReproduce = true;
+                                foodTypeToReset = 'oil';
+                            }
+                        }
+                        break;
+                        
+                    case 'oil-prefer-default':
+                        // Prefers default, then oil
+                        if (this.usingSecondaryFood) {
+                            // Using secondary (oil) food
+                            if (this.consumedFood.oil >= SECONDARY_FOOD_REPRODUCTION_THRESHOLD) {
+                                shouldReproduce = true;
+                                foodTypeToReset = 'oil';
+                            }
+                        } else {
+                            // Using primary (default) food
+                            if (this.consumedFood.default >= PRIMARY_FOOD_REPRODUCTION_THRESHOLD) {
+                                shouldReproduce = true;
+                                foodTypeToReset = 'default';
+                            }
+                        }
+                        break;
+                        
+                    case 'both-no-preference':
+                        // Eats both equally, check whichever has enough
+                        if (this.consumedFood.default >= PRIMARY_FOOD_REPRODUCTION_THRESHOLD) {
+                            shouldReproduce = true;
+                            foodTypeToReset = 'default';
+                        } else if (this.consumedFood.oil >= PRIMARY_FOOD_REPRODUCTION_THRESHOLD) {
+                            shouldReproduce = true;
+                            foodTypeToReset = 'oil';
+                        }
+                        break;
+                }
+                
+                if (shouldReproduce && 
+                    (simulationTime - this.birthTime) >= INITIAL_LAG_TIME) { // Initial lag time still applies
+                    // Reset the food counter that triggered reproduction
+                    if (foodTypeToReset) {
+                        this.consumedFood[foodTypeToReset] = 0;
+                    }
+                    return 'reproduce';
+                }
+                
+                return null;
+            }
+            
+            getFoodCounts(foods) {
+                const counts = {default: 0, oil: 0};
+                foods.forEach(food => {
+                    if (!food.consumed) {
+                        counts[food.type]++;
+                    }
+                });
+                return counts;
+            }
+            
+            shouldEatFood(foodType, currentFoodCounts, initialFoodCounts) {
+                // Diauxic growth preference logic based on food availability
+                switch (this.cellType) {
+                    case 'default-only':
+                        return foodType === 'default';
+                    case 'default-prefer-oil':
+                        // Prefer oil, but eat default when oil is mostly consumed
+                        if (foodType === 'oil') return true;
+                        if (foodType === 'default') {
+                            // Check if oil is mostly consumed (90% threshold)
+                            const oilConsumedRatio = initialFoodCounts.oil > 0 ? 
+                                (initialFoodCounts.oil - currentFoodCounts.oil) / initialFoodCounts.oil : 1;
+                            return oilConsumedRatio >= PREFERRED_FOOD_THRESHOLD;
+                        }
+                        return false;
+                    case 'oil-prefer-default':
+                        // Prefer default, but eat oil when default is mostly consumed
+                        if (foodType === 'default') return true;
+                        if (foodType === 'oil') {
+                            // Check if default is mostly consumed (90% threshold)
+                            const defaultConsumedRatio = initialFoodCounts.default > 0 ? 
+                                (initialFoodCounts.default - currentFoodCounts.default) / initialFoodCounts.default : 1;
+                            return defaultConsumedRatio >= PREFERRED_FOOD_THRESHOLD;
+                        }
+                        return false;
+                    case 'both-no-preference':
+                        return true; // Eat either type
+                    default:
+                        return true;
+                }
+            }
+            
+            updateSecondaryFoodUsage(foodType, currentFoodCounts, initialFoodCounts) {
+                // Update whether the cell is currently using secondary food
+                switch (this.cellType) {
+                    case 'default-prefer-oil':
+                        // Using secondary food (default) when oil is mostly consumed
+                        if (foodType === 'default') {
+                            const oilConsumedRatio = initialFoodCounts.oil > 0 ? 
+                                (initialFoodCounts.oil - currentFoodCounts.oil) / initialFoodCounts.oil : 1;
+                            this.usingSecondaryFood = oilConsumedRatio >= PREFERRED_FOOD_THRESHOLD;
+                        } else if (foodType === 'oil') {
+                            this.usingSecondaryFood = false;
+                        }
+                        break;
+                    case 'oil-prefer-default':
+                        // Using secondary food (oil) when default is mostly consumed
+                        if (foodType === 'oil') {
+                            const defaultConsumedRatio = initialFoodCounts.default > 0 ? 
+                                (initialFoodCounts.default - currentFoodCounts.default) / initialFoodCounts.default : 1;
+                            this.usingSecondaryFood = defaultConsumedRatio >= PREFERRED_FOOD_THRESHOLD;
+                        } else if (foodType === 'default') {
+                            this.usingSecondaryFood = false;
+                        }
+                        break;
+                    default:
+                        this.usingSecondaryFood = false;
+                }
+            }
+            
+            draw(ctx) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                
+                // Color based on cell type
+                switch (this.cellType) {
+                    case 'default-only':
+                        ctx.fillStyle = '#4CAF50'; // Green
+                        break;
+                    case 'default-prefer-oil':
+                        ctx.fillStyle = '#2196F3'; // Blue
+                        break;
+                    case 'oil-prefer-default':
+                        ctx.fillStyle = '#9C27B0'; // Purple
+                        break;
+                    case 'both-no-preference':
+                        ctx.fillStyle = '#FF9800'; // Orange
+                        break;
+                    default:
+                        ctx.fillStyle = '#FF6B6B'; // Red
+                }
+                
+                ctx.fill();
+                
+                // Draw nucleus
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size / 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fill();
+            }
+        }
+        
+        // Initialize simulation
+        function initSimulation(windowKey) {
+            const sim = simulations[windowKey];
+            sim.running = false;
+            sim.time = 0;
+            sim.cells = [];
+            sim.foods = [];
+            sim.history = [{time: 0, cells: 1, food: {default: 0, oil: 0}}];
+            sim.lastTimestamp = 0;
+            sim.initialFoodCounts = {default: 0, oil: 0};
+            sim.dataGenerated = false;
+            
+            // Set the same cell type for all windows
+            sim.cellType = userCellType;
+            
+            // Create initial cell (user's cell type)
+            sim.cells.push(new Cell(
+                Math.random() * (canvases[windowKey].sim.width - 20) + 10,
+                Math.random() * (canvases[windowKey].sim.height - 20) + 10,
+                sim.cellType
+            ));
+            
+            // Add food particles for any loaded food types
+            if (foodLoadState[windowKey].default) {
+                addFoodToSimulation(windowKey, 'default');
+            }
+            if (foodLoadState[windowKey].oil) {
+                addFoodToSimulation(windowKey, 'oil');
+            }
+            
+            // Update status indicator
+            updateStatusIndicator(windowKey);
+            
+            draw(windowKey);
+            drawGraph(windowKey);
+        }
+        
+        // Update status indicator
+        function updateStatusIndicator(windowKey) {
+            if (simulations[windowKey].running) {
+                statusIndicators[windowKey].textContent = 'RUNNING';
+                statusIndicators[windowKey].className = 'status-indicator status-running';
+            } else {
+                statusIndicators[windowKey].textContent = 'PAUSED';
+                statusIndicators[windowKey].className = 'status-indicator status-paused';
+            }
+        }
+        
+        // Draw simulation
+        function draw(windowKey) {
+            const ctx = contexts[windowKey].sim;
+            const canvas = canvases[windowKey].sim;
+            const sim = simulations[windowKey];
+            
+            // Clear canvas
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw food
+            sim.foods.forEach(food => {
+                if (!food.consumed) {
+                    ctx.beginPath();
+                    ctx.arc(food.x, food.y, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = food.type === 'default' ? '#FFE66D' : '#FF9AA2';
+                    ctx.fill();
+                }
+            });
+            
+            // Draw cells
+            sim.cells.forEach(cell => cell.draw(ctx));
+        }
+        
+        // Draw graph
+        function drawGraph(windowKey) {
+            const ctx = contexts[windowKey].graph;
+            const canvas = canvases[windowKey].graph;
+            const sim = simulations[windowKey];
+
+            if (sim.history.length < 2) return;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 30;
+            
+            // Clear graph canvas
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Determine max values for scaling
+            const maxTime = Math.max(1, sim.history[sim.history.length - 1].time);
+            const maxCells = globalMaxCells;
+            const maxFoodDefault = Math.max(1, ...sim.history.map(p => p.food.default));
+            const maxFoodOil = Math.max(1, ...sim.history.map(p => p.food.oil));
+            const maxFoodTotal = globalMaxFood;
+            
+            // Draw grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            // Horizontal grid lines
+            for (let i = 0; i <= 10; i++) {
+                const y = padding + (height - 2 * padding) * (1 - i / 10);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+            
+            // Vertical grid lines
+            for (let i = 0; i <= 10; i++) {
+                const x = padding + (width - 2 * padding) * (i / 10);
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, height - padding);
+                ctx.stroke();
+            }
+            
+            // Draw axes
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 2;
+            
+            // Y axis
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.stroke();
+            
+            // X axis
+            ctx.beginPath();
+            ctx.moveTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+            
+            // Draw cell count line
+            ctx.beginPath();
+            ctx.strokeStyle = '#4CAF50'; // Green
+            ctx.lineWidth = 2;
+            
+            sim.history.forEach((point, index) => {
+                const x = padding + (point.time / maxTime) * (width - 2 * padding);
+                const y = height - padding - (point.cells / maxCells) * (height - 2 * padding);
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.stroke();
+            
+            // Draw default food count line
+            ctx.beginPath();
+            ctx.strokeStyle = '#FFE66D'; // Yellow
+            ctx.lineWidth = 2;
+            
+            sim.history.forEach((point, index) => {
+                const x = padding + (point.time / maxTime) * (width - 2 * padding);
+                const y = height - padding - (point.food.default / maxFoodTotal) * (height - 2 * padding);
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.stroke();
+            
+            // Draw oil food count line
+            ctx.beginPath();
+            ctx.strokeStyle = '#FF9AA2'; // Pink
+            ctx.lineWidth = 2;
+            
+            sim.history.forEach((point, index) => {
+                const x = padding + (point.time / maxTime) * (width - 2 * padding);
+                const y = height - padding - (point.food.oil / maxFoodTotal) * (height - 2 * padding);
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.stroke();
+            
+            // Draw legend
+            ctx.fillStyle = '#4CAF50';
+            ctx.font = '12px Arial';
+            ctx.fillText('Cells', width - 80, 20);
+            
+            ctx.fillStyle = '#FFE66D';
+            ctx.fillText('Default Food', width - 80, 40);
+            
+            ctx.fillStyle = '#FF9AA2';
+            ctx.fillText('Oil Food', width - 80, 60);
+
+            // Add numerical labels
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'right';
+            
+            // Max cell count label
+            ctx.fillText(`Max: ${Math.round(maxCells)}`, width - 10, 20);
+            
+            // Current cell count label
+            if (sim.history.length > 0) {
+                const currentCells = sim.history[sim.history.length - 1].cells;
+                ctx.fillText(`Current: ${currentCells}`, width - 10, 35);
+            }
+        }
+        
+        // Simulation loop
+        function simulationLoop(windowKey, timestamp) {
+            const sim = simulations[windowKey];
+            
+            if (!sim.running) return;
+            
+            if (!sim.lastTimestamp) sim.lastTimestamp = timestamp;
+            const deltaTime = (timestamp - sim.lastTimestamp) / 1000; // Convert to seconds
+            sim.lastTimestamp = timestamp;
+            
+            sim.time += deltaTime;
+
+            // Update global max values every 2 seconds to keep graph scaling consistent across simulations
+            if (Math.floor(sim.time) % 2 === 0) { // Every 2 seconds
+                updateGlobalMaxValues();
+            }
+            
+            // Mark that data has been generated
+            if (!sim.dataGenerated) {
+                sim.dataGenerated = true;
+            }
+            
+            // Update cells
+            const newCells = [];
+            for (let i = sim.cells.length - 1; i >= 0; i--) {
+                const result = sim.cells[i].update(canvases[windowKey].sim, deltaTime, sim.foods, sim.time, windowKey);
+                
+                if (result === 'die') {
+                    // Remove cell
+                    sim.cells.splice(i, 1);
+                } else if (result === 'reproduce') {
+                    // Add new cell
+                    const parent = sim.cells[i];
+                    const angle = Math.random() * Math.PI * 2;
+                    newCells.push(new Cell(
+                        parent.x + Math.cos(angle) * 15,
+                        parent.y + Math.sin(angle) * 15,
+                        parent.cellType
+                    ));
+                }
+            }
+            sim.cells.push(...newCells);
+
+            // Add to history every 0.5 seconds
+            if (sim.history.length === 0 || sim.time - sim.history[sim.history.length - 1].time > 0.5) {
+                const foodCount = {default: 0, oil: 0};
+                sim.foods.forEach(food => {
+                    if (!food.consumed) {
+                        foodCount[food.type]++;
+                    }
+                });
+                
+                sim.history.push({
+                    time: sim.time,
+                    cells: sim.cells.length,
+                    food: foodCount
+                });
+                
+                // Limit history to last 500 points for performance (increased from 100)
+                if (sim.history.length > 500) {
+                    sim.history.shift();
+                }
+            }
+            
+            draw(windowKey);
+            drawGraph(windowKey);
+            
+            // Stop if no cells left
+            if (sim.cells.length === 0) {
+                pauseSimulation(windowKey);
+                return;
+            }
+            
+            sim.animationId = requestAnimationFrame((timestamp) => simulationLoop(windowKey, timestamp));
+        }
+
+        function updateGlobalMaxValues() {
+            // Find max values across all simulations
+            let maxCellsAcrossAll = 1;
+            let maxFoodAcrossAll = 1;
+            
+            Object.keys(simulations).forEach(key => {
+                const sim = simulations[key];
+                if (sim.history.length > 0) {
+                    const maxCells = Math.max(1, ...sim.history.map(p => p.cells));
+                    const maxFood = Math.max(1, ...sim.history.map(p => Math.max(p.food.default, p.food.oil)));
+                    maxCellsAcrossAll = Math.max(maxCellsAcrossAll, maxCells);
+                    maxFoodAcrossAll = Math.max(maxFoodAcrossAll, maxFood);
+                }
+            });
+            
+            globalMaxCells = maxCellsAcrossAll;
+            globalMaxFood = maxFoodAcrossAll;
+        }
+        
+        // Start simulation
+        function startSimulation(windowKey) {
+            const sim = simulations[windowKey];
+            sim.running = true;
+            updateStatusIndicator(windowKey);
+            
+            // Record initial food counts when starting
+            if (!sim.dataGenerated) {
+                sim.initialFoodCounts = {default: 0, oil: 0};
+                
+                // Calculate actual food counts based on loaded food types
+                const loadedFoodTypes = Object.values(foodLoadState[windowKey]).filter(Boolean).length;
+                let foodCountPerType = TOTAL_FOOD_COUNT;
+                if (loadedFoodTypes > 1) {
+                    foodCountPerType = Math.floor(TOTAL_FOOD_COUNT / loadedFoodTypes);
+                }
+                
+                if (foodLoadState[windowKey].default) {
+                    sim.initialFoodCounts.default = foodCountPerType;
+                }
+                if (foodLoadState[windowKey].oil) {
+                    sim.initialFoodCounts.oil = foodCountPerType;
+                }
+            }
+            
+            if (!sim.animationId) {
+                sim.lastTimestamp = 0;
+                sim.animationId = requestAnimationFrame((timestamp) => simulationLoop(windowKey, timestamp));
+            }
+        }
+        
+        // Pause simulation
+        function pauseSimulation(windowKey) {
+            simulations[windowKey].running = false;
+            updateStatusIndicator(windowKey);
+            if (simulations[windowKey].animationId) {
+                cancelAnimationFrame(simulations[windowKey].animationId);
+                simulations[windowKey].animationId = null;
+            }
+        }
+        
+        // Reset simulation
+        function resetSimulation(windowKey) {
+            pauseSimulation(windowKey);
+            initSimulation(windowKey);
+        }
+        
+        // Event Listeners for control buttons
+        document.getElementById('startBtnA').addEventListener('click', () => startSimulation('A'));
+        document.getElementById('pauseBtnA').addEventListener('click', () => pauseSimulation('A'));
+        document.getElementById('resetBtnA').addEventListener('click', () => resetSimulation('A'));
+        
+        document.getElementById('startBtnB').addEventListener('click', () => startSimulation('B'));
+        document.getElementById('pauseBtnB').addEventListener('click', () => pauseSimulation('B'));
+        document.getElementById('resetBtnB').addEventListener('click', () => resetSimulation('B'));
+        
+        document.getElementById('startBtnC').addEventListener('click', () => startSimulation('C'));
+        document.getElementById('pauseBtnC').addEventListener('click', () => pauseSimulation('C'));
+        document.getElementById('resetBtnC').addEventListener('click', () => resetSimulation('C'));
+        
+        // Global controls
+        document.getElementById('startAllBtn').addEventListener('click', () => {
+            Object.keys(simulations).forEach(key => startSimulation(key));
+        });
+        
+        document.getElementById('pauseAllBtn').addEventListener('click', () => {
+            Object.keys(simulations).forEach(key => pauseSimulation(key));
+        });
+        
+        document.getElementById('resetAllBtn').addEventListener('click', () => {
+            Object.keys(simulations).forEach(key => resetSimulation(key));
+        });
+        
+        // Quiz functionality
+        document.getElementById('submitQuizBtn').addEventListener('click', function() {
+            document.getElementById('quizSection').style.display = 'none';
+            const resultSection = document.getElementById('resultSection');
+            resultSection.innerHTML = `
+                <h2>Results</h2>
+                <p>Your cell type was: <strong>${formatCellTypeName(userCellType)}</strong></p>
+                <p>You were given a cell that behaves according to this pattern.</p>
+                <button onclick="location.reload()">Run New Experiment</button>
+            `;
+            resultSection.className = 'result-section show';
+        });
+        
+        // Format cell type name for display
+        function formatCellTypeName(type) {
+            switch (type) {
+                case 'default-only': return 'Cell Type A: Eats only Default food';
+                case 'default-prefer-oil': return 'Cell Type B: Eats Default but prefers Oil';
+                case 'oil-prefer-default': return 'Cell Type C: Eats Oil but prefers Default';
+                case 'both-no-preference': return 'Cell Type D: Eats both with no preference';
+                default: return type;
+            }
+        }
+        
+        // Quiz option selection
+        document.querySelectorAll('.quiz-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.quiz-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                this.classList.add('selected');
+            });
+        });
+        
+        // Initialize all simulations
+        window.addEventListener('load', function() {
+            resizeCanvases();
+            Object.keys(simulations).forEach(key => initSimulation(key));
+        });
+    </script>
+</body>
+</html>
