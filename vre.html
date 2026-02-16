@@ -151,7 +151,7 @@
         .food-indicator {
             padding: 3px 8px;
             border-radius: 10px;
-            font-size: 0.8rem;
+            font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
@@ -514,10 +514,6 @@
                 <div class="simulation-header">
                     <div class="window-title">Experiment A</div>
                     <div class="status-indicator status-paused" id="statusA">PAUSED</div>
-                    <div class="food-indicator-container">
-                        <div class="food-indicator food-none" id="foodIndicatorA1" data-window="A" data-type="default">Add Sucrose</div>
-                        <div class="food-indicator food-none" id="foodIndicatorA2" data-window="A" data-type="oil">Add Hydrocarbons</div>
-                    </div>
                 </div>
                 <canvas id="simulationCanvasA" class="simulationCanvas"></canvas>
                 <canvas id="graphCanvasA" class="graphCanvas"></canvas>
@@ -528,52 +524,41 @@
                 <div class="simulation-header">
                     <div class="window-title">Experiment B</div>
                     <div class="status-indicator status-paused" id="statusB">PAUSED</div>
-                    <div class="food-indicator-container">
-                        <div class="food-indicator food-none" id="foodIndicatorB1" data-window="B" data-type="default">Add Sucrose</div>
-                        <div class="food-indicator food-none" id="foodIndicatorB2" data-window="B" data-type="oil">Add Hydrocarbons</div>
-                    </div>
                 </div>
                 <canvas id="simulationCanvasB" class="simulationCanvas"></canvas>
                 <canvas id="graphCanvasB" class="graphCanvas"></canvas>
                 <div class="cell-id cell-blue" id="cellIdB">Cell: Blue Square</div>
             </div>
-        </div>
-        
-        <div class="simulation-container">
+            
             <div class="simulation-window">
                 <div class="simulation-header">
                     <div class="window-title">Experiment C</div>
                     <div class="status-indicator status-paused" id="statusC">PAUSED</div>
-                    <div class="food-indicator-container">
-                        <div class="food-indicator food-none" id="foodIndicatorC1" data-window="C" data-type="default">Add Sucrose</div>
-                        <div class="food-indicator food-none" id="foodIndicatorC2" data-window="C" data-type="oil">Add Hydrocarbons</div>
-                    </div>
                 </div>
                 <canvas id="simulationCanvasC" class="simulationCanvas"></canvas>
                 <canvas id="graphCanvasC" class="graphCanvas"></canvas>
                 <div class="cell-id cell-purple" id="cellIdC">Cell: Purple Triangle</div>
             </div>
+        </div>
+        
+        <div class="panel">
+            <h2>Instructions</h2>
+            <p>Each experiment contains a different microbial strain. Two food sources are available:</p>
+            <div class="food-indicator food-default" id="Sucrose">Sucrose (Sugar source)</div>
+            <div class="food-indicator food-oil" id="Hydrocarbons">Hydrocarbons (Oil contaminants)</div>
+
+            <p>Using the growth curve data, rank the microbes according to their potential utility in oil spill bioremediation.</p>
             
-            <div class="panel">
-                <h2>Instructions</h2>
-                <p>Click on food labels to load them into experiments.</p>
-                <p>Each experiment contains a different microbe strain.</p>
-                <p>Run all experiments, then rank the microbes according to their potential utility in oil spill bioremediation.</p>
-                
-                <div class="controls">
-                    <button id="startAllBtn">Start</button>
-                    <button id="pauseAllBtn">Pause</button>
-                    <button id="resetAllBtn">Reset Current Experiment</button>
-                </div>
-                
-                <div class="controls">
-                    <label>
-                        <input type="checkbox" id="showFoodCheckbox" unchecked> Show Food Count
-                    </label>
-                    <!-- <label>
-                        <input type="checkbox" id="logScaleCheckbox" checked> Log Scale
-                    </label> -->
-                </div>
+            <div class="controls">
+                <button id="startAllBtn">Start</button>
+                <button id="pauseAllBtn">Pause</button>
+                <button id="resetAllBtn">Reset Current Experiment</button>
+            </div>
+            
+            <div class="controls">
+                <label>
+                    <input type="checkbox" id="showFoodCheckbox" checked> Show Food Count
+                </label>
             </div>
         </div>
     </div>
@@ -598,7 +583,6 @@
     </div>
 
     <script>
-
         // Hamburger menu functionality
         document.addEventListener('DOMContentLoaded', function() {
             const menuToggle = document.querySelector('.menu-toggle');
@@ -679,7 +663,7 @@
         const SECONDARY_FOOD_LAG = 8; // 8 second lag before consuming secondary food
         let globalMaxCells = 1; // Normalizing y axis of the graph to the maximum cell count across all simulations
         let globalMaxFood = 1; // Normalizing y axis of the graph to the maximum food count across all simulations
-        let showFoodCount = false;
+        let showFoodCount = true;
         let useLogScale = false;
         
         // Define the three microbe types
@@ -773,7 +757,7 @@
                 lastTimestamp: 0,
                 animationId: null,
                 cellType: microbeAssignment.A,
-                initialFoodCounts: {default: 0, oil: 0},
+                initialFoodCounts: {default: 50, oil: 50},
                 dataGenerated: false
             },
             B: { 
@@ -785,7 +769,7 @@
                 lastTimestamp: 0,
                 animationId: null,
                 cellType: microbeAssignment.B,
-                initialFoodCounts: {default: 0, oil: 0},
+                initialFoodCounts: {default: 50, oil: 50},
                 dataGenerated: false
             },
             C: { 
@@ -797,7 +781,7 @@
                 lastTimestamp: 0,
                 animationId: null,
                 cellType: microbeAssignment.C,
-                initialFoodCounts: {default: 0, oil: 0},
+                initialFoodCounts: {default: 50, oil: 50},
                 dataGenerated: false
             }
         };
@@ -809,101 +793,33 @@
             C: document.getElementById('statusC')
         };
         
-        // Food loading state (initially no food loaded)
-        const foodLoadState = {
-            A: { default: false, oil: false },
-            B: { default: false, oil: false },
-            C: { default: false, oil: false }
-        };
-        
-        // DOM Elements
-        const foodIndicators = {
-            A: {
-                default: document.getElementById('foodIndicatorA1'),
-                oil: document.getElementById('foodIndicatorA2')
-            },
-            B: {
-                default: document.getElementById('foodIndicatorB1'),
-                oil: document.getElementById('foodIndicatorB2')
-            },
-            C: {
-                default: document.getElementById('foodIndicatorC1'),
-                oil: document.getElementById('foodIndicatorC2')
-            }
-        };
-        
-        // Setup food indicator click handlers
-        Object.keys(foodIndicators).forEach(windowKey => {
-            Object.keys(foodIndicators[windowKey]).forEach(foodType => {
-                foodIndicators[windowKey][foodType].addEventListener('click', function() {
-                    toggleFoodInWindow(windowKey, foodType);
-                });
-            });
-        });
-        
-        // Toggle food in a simulation window
-        function toggleFoodInWindow(windowKey, foodType) {
-            // Prevent modification if data has been generated
-            if (simulations[windowKey].dataGenerated) {
-                alert("Cannot modify food after simulation has started. Please reset first.");
-                return;
-            }
-            
-            // Toggle food state
-            foodLoadState[windowKey][foodType] = !foodLoadState[windowKey][foodType];
-            
-            // Update UI
-            if (foodLoadState[windowKey][foodType]) {
-                if (foodType === 'default') {
-                    foodIndicators[windowKey].default.textContent = 'Sucrose Loaded';
-                    foodIndicators[windowKey].default.className = 'food-indicator food-default';
-                } else if (foodType === 'oil') {
-                    foodIndicators[windowKey].oil.textContent = 'Hydrocarbons Loaded';
-                    foodIndicators[windowKey].oil.className = 'food-indicator food-oil';
-                }
-            } else {
-                if (foodType === 'default') {
-                    foodIndicators[windowKey].default.textContent = 'Add Sucrose';
-                    foodIndicators[windowKey].default.className = 'food-indicator food-none';
-                } else if (foodType === 'oil') {
-                    foodIndicators[windowKey].oil.textContent = 'Add Hydrocarbons';
-                    foodIndicators[windowKey].oil.className = 'food-indicator food-none';
-                }
-            }
-            
-            // Add/remove food particles to simulation if running or already has data
-            if (simulations[windowKey].running || simulations[windowKey].dataGenerated) {
-                if (foodLoadState[windowKey][foodType]) {
-                    addFoodToSimulation(windowKey, foodType);
-                } else {
-                    const sim = simulations[windowKey];
-                    sim.foods = sim.foods.filter(food => food.type !== foodType);
-                    draw(windowKey);
-                }
-            }
-        }
-        
-        // Add food particles to simulation
-        function addFoodToSimulation(windowKey, foodType) {
+        // Add food particles to simulation (always adds 50 of each type)
+        function addFoodToSimulation(windowKey) {
             const sim = simulations[windowKey];
             
-            // Calculate food count based on how many food types are loaded
-            let foodCountPerType = TOTAL_FOOD_COUNT;
-            const loadedFoodTypes = Object.values(foodLoadState[windowKey]).filter(Boolean).length;
-            if (loadedFoodTypes > 1) {
-                foodCountPerType = Math.floor(TOTAL_FOOD_COUNT / loadedFoodTypes);
-            }
-            
-            for (let i = 0; i < foodCountPerType; i++) {
+            // Add 50 default food particles
+            for (let i = 0; i < 50; i++) {
                 sim.foods.push({
                     x: Math.random() * canvases[windowKey].sim.width,
                     y: Math.random() * canvases[windowKey].sim.height,
-                    type: foodType,
+                    type: 'default',
                     consumed: false
                 });
             }
+            
+            // Add 50 oil food particles
+            for (let i = 0; i < 50; i++) {
+                sim.foods.push({
+                    x: Math.random() * canvases[windowKey].sim.width,
+                    y: Math.random() * canvases[windowKey].sim.height,
+                    type: 'oil',
+                    consumed: false
+                });
+            }
+            
             draw(windowKey);
         }
+
         
         // Cell class with food preferences and shapes
         class Cell {
@@ -1209,10 +1125,10 @@
             sim.running = false;
             sim.time = 0;
             sim.cells = [];
-            sim.foods = [];
+            sim.foods = []; // Clear foods
             sim.history = [{time: 0, cells: 1, food: {default: 0, oil: 0}}];
             sim.lastTimestamp = 0;
-            sim.initialFoodCounts = {default: 0, oil: 0};
+            sim.initialFoodCounts = {default: 50, oil: 50};
             sim.dataGenerated = false;
             
             // Set the specific cell type for this window
@@ -1225,13 +1141,8 @@
                 sim.cellType
             ));
             
-            // Add food particles for any loaded food types
-            if (foodLoadState[windowKey].default) {
-                addFoodToSimulation(windowKey, 'default');
-            }
-            if (foodLoadState[windowKey].oil) {
-                addFoodToSimulation(windowKey, 'oil');
-            }
+            // Add food particles for BOTH food types automatically
+            addFoodToSimulation(windowKey);
             
             // Update status indicator
             updateStatusIndicator(windowKey);
@@ -1239,6 +1150,7 @@
             draw(windowKey);
             drawGraph(windowKey);
         }
+
         
         // Update status indicator
         function updateStatusIndicator(windowKey) {
@@ -1521,45 +1433,9 @@
             sim.running = true;
             updateStatusIndicator(windowKey);
             
-            // Record initial food counts when starting AND add food if needed
+            // Record initial food counts when starting
             if (!sim.dataGenerated) {
-                sim.initialFoodCounts = {default: 0, oil: 0};
-                
-                // Calculate actual food counts based on loaded food types
-                const loadedFoodTypes = Object.values(foodLoadState[windowKey]).filter(Boolean).length;
-                let foodCountPerType = TOTAL_FOOD_COUNT;
-                if (loadedFoodTypes > 1) {
-                    foodCountPerType = Math.floor(TOTAL_FOOD_COUNT / loadedFoodTypes);
-                }
-                
-                if (foodLoadState[windowKey].default) {
-                    sim.initialFoodCounts.default = foodCountPerType;
-                    // Add default food if not already present
-                    if (!sim.foods.some(food => food.type === 'default')) {
-                        for (let i = 0; i < foodCountPerType; i++) {
-                            sim.foods.push({
-                                x: Math.random() * canvases[windowKey].sim.width,
-                                y: Math.random() * canvases[windowKey].sim.height,
-                                type: 'default',
-                                consumed: false
-                            });
-                        }
-                    }
-                }
-                if (foodLoadState[windowKey].oil) {
-                    sim.initialFoodCounts.oil = foodCountPerType;
-                    // Add oil food if not already present
-                    if (!sim.foods.some(food => food.type === 'oil')) {
-                        for (let i = 0; i < foodCountPerType; i++) {
-                            sim.foods.push({
-                                x: Math.random() * canvases[windowKey].sim.width,
-                                y: Math.random() * canvases[windowKey].sim.height,
-                                type: 'oil',
-                                consumed: false
-                            });
-                        }
-                    }
-                }
+                sim.initialFoodCounts = {default: 50, oil: 50};
             }
             
             if (!sim.animationId) {
@@ -1604,11 +1480,6 @@
             showFoodCount = this.checked;
             Object.keys(simulations).forEach(key => drawGraph(key));
         });
-        
-        //document.getElementById('logScaleCheckbox').addEventListener('change', function() {
-        //    useLogScale = this.checked;
-        //    Object.keys(simulations).forEach(key => drawGraph(key));
-        //});
         
         // Check if all simulations are stopped and show quiz
         function checkAndShowQuiz() {
