@@ -47,9 +47,9 @@
             position: relative;
             display: inline-block;
         }
-
+        
         .menu-content {
-            display: none !important;
+            display: none;
             position: absolute;
             top: 40px;
             right: 0;
@@ -58,10 +58,6 @@
             border-radius: 4px;
             min-width: 200px;
             z-index: 5;
-        }
-
-        .menu-content.show {
-            display: block !important;
         }
         
         .menu-content a {
@@ -327,42 +323,21 @@
             margin: 15px 0;
         }
         
-        .ranking-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin: 20px 0;
-        }
-        
-        .ranking-item {
+        .quiz-option {
             padding: 15px;
             background: #f0f0f0;
             border-radius: 5px;
-            cursor: grab;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
         }
         
-        .ranking-item:hover {
+        .quiz-option:hover {
             background: #e0e0e0;
         }
         
-        .ranking-item.dragging {
-            opacity: 0.7;
-            cursor: grabbing;
-        }
-        
-        .ranking-number {
-            font-weight: bold;
-            font-size: 1.2em;
-            min-width: 30px;
-            text-align: center;
-        }
-        
-        .ranking-content {
-            flex: 1;
+        .quiz-option.selected {
+            background: #4CAF50;
+            color: white;
         }
         
         .result-section {
@@ -377,11 +352,6 @@
             display: block;
         }
         
-        .result-section ul {
-            font-weight: normal;
-            text-align: left;
-        }
-
         /* Status indicator for simulations */
         .status-indicator {
             font-size: 0.8rem;
@@ -414,82 +384,6 @@
             width: 100%;
             height: 200px;
         }
-        
-        /* Drag placeholder */
-        .drag-placeholder {
-            height: 60px;
-            background: #e0e0e0;
-            border: 2px dashed #999;
-            border-radius: 5px;
-            margin: 5px 0;
-        }
-        
-        /* Cell identification */
-        .cell-id {
-            font-size: 1.0rem;
-            padding: 3px 6px;
-            border-radius: 8px;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-        
-        .cell-green {
-            background-color: #4CAF50;
-            color: white;
-        }
-        
-        .cell-blue {
-            background-color: #2196F3;
-            color: white;
-        }
-        
-        .cell-purple {
-            background-color: #9C27B0;
-            color: white;
-        }
-
-        .container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .simulation-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        @media (min-width: 768px) {
-            .container {
-                flex-direction: row;
-            }
-            
-            .simulation-container {
-                flex-direction: row;
-            }
-        }
-
-        .simulation-window, .panel {
-            background: white;
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 0; /* Prevents flex items from overflowing */
-        }
-
-        .simulation-header {
-            flex-shrink: 0;
-        }
-
-        .simulationCanvas, .graphCanvas {
-            width: 100%;
-            height: 200px;
-            flex-shrink: 0;
-        }
     </style>
 </head>
 <body>
@@ -515,13 +409,12 @@
                     <div class="window-title">Experiment A</div>
                     <div class="status-indicator status-paused" id="statusA">PAUSED</div>
                     <div class="food-indicator-container">
-                        <div class="food-indicator food-none" id="foodIndicatorA1" data-window="A" data-type="default">Add Sucrose</div>
-                        <div class="food-indicator food-none" id="foodIndicatorA2" data-window="A" data-type="oil">Add Hydrocarbons</div>
+                        <div class="food-indicator food-none" id="foodIndicatorA1" data-window="A" data-type="default">Add Default Food</div>
+                        <div class="food-indicator food-none" id="foodIndicatorA2" data-window="A" data-type="oil">Add Oil Food</div>
                     </div>
                 </div>
                 <canvas id="simulationCanvasA" class="simulationCanvas"></canvas>
                 <canvas id="graphCanvasA" class="graphCanvas"></canvas>
-                <div class="cell-id cell-green" id="cellIdA">Cell: Green Circle</div>
             </div>
             
             <div class="simulation-window">
@@ -529,13 +422,12 @@
                     <div class="window-title">Experiment B</div>
                     <div class="status-indicator status-paused" id="statusB">PAUSED</div>
                     <div class="food-indicator-container">
-                        <div class="food-indicator food-none" id="foodIndicatorB1" data-window="B" data-type="default">Add Sucrose</div>
-                        <div class="food-indicator food-none" id="foodIndicatorB2" data-window="B" data-type="oil">Add Hydrocarbons</div>
+                        <div class="food-indicator food-none" id="foodIndicatorB1" data-window="B" data-type="default">Add Default Food</div>
+                        <div class="food-indicator food-none" id="foodIndicatorB2" data-window="B" data-type="oil">Add Oil Food</div>
                     </div>
                 </div>
                 <canvas id="simulationCanvasB" class="simulationCanvas"></canvas>
                 <canvas id="graphCanvasB" class="graphCanvas"></canvas>
-                <div class="cell-id cell-blue" id="cellIdB">Cell: Blue Square</div>
             </div>
         </div>
         
@@ -545,51 +437,56 @@
                     <div class="window-title">Experiment C</div>
                     <div class="status-indicator status-paused" id="statusC">PAUSED</div>
                     <div class="food-indicator-container">
-                        <div class="food-indicator food-none" id="foodIndicatorC1" data-window="C" data-type="default">Add Sucrose</div>
-                        <div class="food-indicator food-none" id="foodIndicatorC2" data-window="C" data-type="oil">Add Hydrocarbons</div>
+                        <div class="food-indicator food-none" id="foodIndicatorC1" data-window="C" data-type="default">Add Default Food</div>
+                        <div class="food-indicator food-none" id="foodIndicatorC2" data-window="C" data-type="oil">Add Oil Food</div>
                     </div>
                 </div>
                 <canvas id="simulationCanvasC" class="simulationCanvas"></canvas>
                 <canvas id="graphCanvasC" class="graphCanvas"></canvas>
-                <div class="cell-id cell-purple" id="cellIdC">Cell: Purple Triangle</div>
             </div>
             
             <div class="panel">
                 <h2>Instructions</h2>
                 <p>Click on food labels to load them into experiments.</p>
-                <p>Each experiment contains a different microbe strain.</p>
-                <p>Run all experiments, then rank the microbes according to their potential utility in oil spill bioremediation.</p>
+                <p>Windows can have both food types loaded simultaneously.</p>
+                <p>Each experiment runs independently with its loaded food types.</p>
+                <p>After running experiments, you'll be quizzed on your cell type.</p>
                 
                 <div class="controls">
-                    <button id="startAllBtn">Start</button>
-                    <button id="pauseAllBtn">Pause</button>
-                    <button id="resetAllBtn">Reset Current Experiment</button>
+                    <button id="startAllBtn">Start All</button>
+                    <button id="pauseAllBtn">Pause All</button>
+                    <button id="resetAllBtn">Reset All</button>
                 </div>
                 
                 <div class="controls">
                     <label>
-                        <input type="checkbox" id="showFoodCheckbox" unchecked> Show Food Count
+                        <input type="checkbox" id="showFoodCheckbox" checked> Show Food Count
                     </label>
-                    <!-- <label>
-                        <input type="checkbox" id="logScaleCheckbox" checked> Log Scale
-                    </label> -->
                 </div>
             </div>
         </div>
     </div>
     
     <div class="quiz-section" id="quizSection">
-        <h2>Bioremediation Ranking</h2>
-        <p>Rank the microbes from least to most effective for oil spill cleanup:</p>
-        <p><strong>Least Effective</strong></p>
+        <h2>Research Quiz</h2>
+        <p>Based on your experiments, which type of cell do you think you were given?</p>
         
-        <div class="ranking-container" id="rankingContainer">
-            <!-- Populated by JavaScript -->
+        <div class="quiz-options">
+            <div class="quiz-option" data-type="default-only">
+                Cell Type A: Eats only Default food
+            </div>
+            <div class="quiz-option" data-type="default-prefer-oil">
+                Cell Type B: Eats Default but prefers Oil
+            </div>
+            <div class="quiz-option" data-type="oil-prefer-default">
+                Cell Type C: Eats Oil but prefers Default
+            </div>
+            <div class="quiz-option" data-type="both-no-preference">
+                Cell Type D: Eats both with no preference
+            </div>
         </div>
-
-        <p><strong>Most Effective</strong></p>
         
-        <button id="submitQuizBtn">Submit Ranking</button>
+        <button id="submitQuizBtn">Submit Answer</button>
         <div id="quizResult" class="result-section"></div>
     </div>
     
@@ -598,33 +495,6 @@
     </div>
 
     <script>
-
-        // Hamburger menu functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.querySelector('.menu-toggle');
-            const menuContent = document.querySelector('.menu-content');
-            
-            menuToggle.addEventListener('click', function(e) {
-                e.stopPropagation(); // Prevent event bubbling
-                menuContent.classList.toggle('show');
-            });
-            
-            // Close menu when clicking elsewhere
-            document.addEventListener('click', function(e) {
-                if (!menuToggle.contains(e.target) && !menuContent.contains(e.target)) {
-                    menuContent.classList.remove('show');
-                }
-            });
-            
-            // Close menu when clicking a link
-            const menuLinks = document.querySelectorAll('.menu-content a');
-            menuLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    menuContent.classList.remove('show');
-                });
-            });
-        });
-
         // Canvas setup for all simulations
         const canvases = {
             A: {
@@ -679,88 +549,7 @@
         const SECONDARY_FOOD_LAG = 8; // 8 second lag before consuming secondary food
         let globalMaxCells = 1; // Normalizing y axis of the graph to the maximum cell count across all simulations
         let globalMaxFood = 1; // Normalizing y axis of the graph to the maximum food count across all simulations
-        let showFoodCount = false;
-        let useLogScale = false;
-        
-        // Define the three microbe types
-        const microbeTypes = [
-            'default-only',           // Only eats default food
-            'oil-prefer-default',     // Eats both but prefers default
-            'default-prefer-oil'      // Eats both but prefers oil
-        ];
-        
-        // Microbe display info
-        const microbeInfo = {
-            'default-only': {
-                name: 'Green Circle',
-                color: '#4CAF50',
-                shape: 'circle'
-            },
-            'oil-prefer-default': {
-                name: 'Purple Triangle',
-                color: '#CF42ED',
-                shape: 'triangle'
-            },
-            'default-prefer-oil': {
-                name: 'Blue Square',
-                color: '#2196F3',
-                shape: 'square'
-            }
-        };
-        
-        // Shuffle array to randomize microbe assignment
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-        
-        // Assign microbes randomly to experiments, avoiding correct order
-        function assignMicrobesWithoutCorrectOrder() {
-            let assignment;
-            let attempts = 0;
-            const correctOrder = ['default-only', 'oil-prefer-default', 'default-prefer-oil'];
-            
-            do {
-                const shuffledMicrobes = shuffleArray([...microbeTypes]);
-                assignment = {
-                    A: shuffledMicrobes[0],
-                    B: shuffledMicrobes[1],
-                    C: shuffledMicrobes[2]
-                };
-                
-                // Check if this is the correct order
-                const currentOrder = [assignment.A, assignment.B, assignment.C];
-                const isCorrectOrder = JSON.stringify(currentOrder) === JSON.stringify(correctOrder);
-                
-                attempts++;
-                // If we've tried too many times, just go with what we have
-                if (attempts > 10) break;
-                
-                // Keep shuffling until we don't get the correct order
-                if (!isCorrectOrder) break;
-                
-            } while (true);
-            
-            return assignment;
-        }
-        
-        // Assign microbes randomly to experiments
-        const microbeAssignment = assignMicrobesWithoutCorrectOrder();
-        
-        // Update cell ID displays
-        function updateCellIdDisplays() {
-            document.getElementById('cellIdA').innerHTML = `Cell: ${microbeInfo[microbeAssignment.A].name}`;
-            document.getElementById('cellIdB').innerHTML = `Cell: ${microbeInfo[microbeAssignment.B].name}`;
-            document.getElementById('cellIdC').innerHTML = `Cell: ${microbeInfo[microbeAssignment.C].name}`;
-            
-            // Update classes for colors
-            document.getElementById('cellIdA').className = `cell-id cell-${microbeInfo[microbeAssignment.A].name.split(' ')[0].toLowerCase()}`;
-            document.getElementById('cellIdB').className = `cell-id cell-${microbeInfo[microbeAssignment.B].name.split(' ')[0].toLowerCase()}`;
-            document.getElementById('cellIdC').className = `cell-id cell-${microbeInfo[microbeAssignment.C].name.split(' ')[0].toLowerCase()}`;
-        }
+        let showFoodCount = true;
         
         // Simulation state for each window
         const simulations = {
@@ -772,7 +561,7 @@
                 history: [],
                 lastTimestamp: 0,
                 animationId: null,
-                cellType: microbeAssignment.A,
+                cellType: null,
                 initialFoodCounts: {default: 0, oil: 0},
                 dataGenerated: false
             },
@@ -784,7 +573,7 @@
                 history: [],
                 lastTimestamp: 0,
                 animationId: null,
-                cellType: microbeAssignment.B,
+                cellType: null,
                 initialFoodCounts: {default: 0, oil: 0},
                 dataGenerated: false
             },
@@ -796,7 +585,7 @@
                 history: [],
                 lastTimestamp: 0,
                 animationId: null,
-                cellType: microbeAssignment.C,
+                cellType: null,
                 initialFoodCounts: {default: 0, oil: 0},
                 dataGenerated: false
             }
@@ -815,6 +604,10 @@
             B: { default: false, oil: false },
             C: { default: false, oil: false }
         };
+        
+        // Cell types (randomly assigned - same for all windows)
+        const cellTypes = ['default-only', 'default-prefer-oil', 'oil-prefer-default', 'both-no-preference'];
+        const userCellType = cellTypes[Math.floor(Math.random() * cellTypes.length)];
         
         // DOM Elements
         const foodIndicators = {
@@ -855,18 +648,18 @@
             // Update UI
             if (foodLoadState[windowKey][foodType]) {
                 if (foodType === 'default') {
-                    foodIndicators[windowKey].default.textContent = 'Sucrose Loaded';
+                    foodIndicators[windowKey].default.textContent = 'Default Food Loaded';
                     foodIndicators[windowKey].default.className = 'food-indicator food-default';
                 } else if (foodType === 'oil') {
-                    foodIndicators[windowKey].oil.textContent = 'Hydrocarbons Loaded';
+                    foodIndicators[windowKey].oil.textContent = 'Oil Food Loaded';
                     foodIndicators[windowKey].oil.className = 'food-indicator food-oil';
                 }
             } else {
                 if (foodType === 'default') {
-                    foodIndicators[windowKey].default.textContent = 'Add Sucrose';
+                    foodIndicators[windowKey].default.textContent = 'Add Default Food';
                     foodIndicators[windowKey].default.className = 'food-indicator food-none';
                 } else if (foodType === 'oil') {
-                    foodIndicators[windowKey].oil.textContent = 'Add Hydrocarbons';
+                    foodIndicators[windowKey].oil.textContent = 'Add Oil Food';
                     foodIndicators[windowKey].oil.className = 'food-indicator food-none';
                 }
             }
@@ -905,7 +698,7 @@
             draw(windowKey);
         }
         
-        // Cell class with food preferences and shapes
+        // Cell class with food preferences
         class Cell {
             constructor(x, y, cellType) {
                 this.x = x;
@@ -917,17 +710,13 @@
                 this.vx = Math.cos(angle) * CELL_SPEED;
                 this.vy = Math.sin(angle) * CELL_SPEED;
                 
-                this.cellType = cellType;
+                this.cellType = cellType; // 'default-only', 'default-prefer-oil', 'oil-prefer-default', 'both-no-preference'
                 this.consumedFood = { default: 0, oil: 0 };
                 this.lastFedType = null;
                 this.starvationTimer = 0;
-                this.birthTime = 0;
-                this.usingSecondaryFood = false;
-                this.secondaryFoodSwitchTime = null;
-                
-                // Get shape info
-                this.shape = microbeInfo[cellType].shape;
-                this.color = microbeInfo[cellType].color;
+                this.birthTime = 0; // Will be set when simulation starts
+                this.usingSecondaryFood = false; // Track if currently using secondary food
+                this.secondaryFoodSwitchTime = null; // Track when secondary food becomes available
             }
             
             update(canvas, deltaTime, foods, simulationTime, windowKey) {
@@ -1002,7 +791,7 @@
                 }
                 
                 // Die if starved too long
-                if (this.starvationTimer > 15) {
+                if (this.starvationTimer > 15) { // 15 seconds starvation limit
                     return 'die';
                 }
                 
@@ -1067,7 +856,7 @@
                 }
                 
                 if (shouldReproduce && 
-                    (simulationTime - this.birthTime) >= INITIAL_LAG_TIME) {
+                    (simulationTime - this.birthTime) >= INITIAL_LAG_TIME) { // Initial lag time still applies
                     // Reset the food counter that triggered reproduction
                     if (foodTypeToReset) {
                         this.consumedFood[foodTypeToReset] = 0;
@@ -1104,11 +893,11 @@
                             // Only switch to secondary food after 3-second lag
                             if (oilConsumedRatio >= PREFERRED_FOOD_THRESHOLD) {
                                 if (this.secondaryFoodSwitchTime === null) {
-                                    this.secondaryFoodSwitchTime = simulationTime;
+                                    this.secondaryFoodSwitchTime = simulationTime; // Set switch time
                                 }
                                 return (simulationTime - this.secondaryFoodSwitchTime) >= SECONDARY_FOOD_LAG;
                             } else {
-                                this.secondaryFoodSwitchTime = null;
+                                this.secondaryFoodSwitchTime = null; // Reset if condition changes
                             }
                             return false;
                         }
@@ -1124,17 +913,17 @@
                             // Only switch to secondary food after 3-second lag
                             if (defaultConsumedRatio >= PREFERRED_FOOD_THRESHOLD) {
                                 if (this.secondaryFoodSwitchTime === null) {
-                                    this.secondaryFoodSwitchTime = simulationTime;
+                                    this.secondaryFoodSwitchTime = simulationTime; // Set switch time
                                 }
                                 return (simulationTime - this.secondaryFoodSwitchTime) >= SECONDARY_FOOD_LAG;
                             } else {
-                                this.secondaryFoodSwitchTime = null;
+                                this.secondaryFoodSwitchTime = null; // Reset if condition changes
                             }
                             return false;
                         }
                         return false;
                     case 'both-no-preference':
-                        return true;
+                        return true; // Eat either type
                     default:
                         return true;
                 }
@@ -1171,35 +960,34 @@
             }
             
             draw(ctx) {
-                ctx.save();
-                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 
-                // Draw different shapes based on cell type
-                switch (this.shape) {
-                    case 'circle':
-                        ctx.beginPath();
-                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                        ctx.fill();
+                // Color based on cell type
+                switch (this.cellType) {
+                    case 'default-only':
+                        ctx.fillStyle = '#4CAF50'; // Green
                         break;
-                    case 'square':
-                        ctx.fillRect(this.x - this.size, this.y - this.size, this.size * 2, this.size * 2);
+                    case 'default-prefer-oil':
+                        ctx.fillStyle = '#2196F3'; // Blue
                         break;
-                    case 'triangle':
-                        ctx.beginPath();
-                        ctx.moveTo(this.x, this.y - this.size);
-                        ctx.lineTo(this.x - this.size, this.y + this.size);
-                        ctx.lineTo(this.x + this.size, this.y + this.size);
-                        ctx.closePath();
-                        ctx.fill();
+                    case 'oil-prefer-default':
+                        ctx.fillStyle = '#9C27B0'; // Purple
                         break;
+                    case 'both-no-preference':
+                        ctx.fillStyle = '#FF9800'; // Orange
+                        break;
+                    default:
+                        ctx.fillStyle = '#FF6B6B'; // Red
                 }
                 
-                // Draw nucleus (white circle in center)
-                ctx.fillStyle = '#FFFFFF';
+                ctx.fill();
+                
+                // Draw nucleus
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size / 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#FFFFFF';
                 ctx.fill();
-                ctx.restore();
             }
         }
         
@@ -1215,10 +1003,10 @@
             sim.initialFoodCounts = {default: 0, oil: 0};
             sim.dataGenerated = false;
             
-            // Set the specific cell type for this window
-            sim.cellType = microbeAssignment[windowKey];
+            // Set the same cell type for all windows
+            sim.cellType = userCellType;
             
-            // Create initial cell (assigned microbe type)
+            // Create initial cell (user's cell type)
             sim.cells.push(new Cell(
                 Math.random() * (canvases[windowKey].sim.width - 20) + 10,
                 Math.random() * (canvases[windowKey].sim.height - 20) + 10,
@@ -1336,24 +1124,16 @@
             ctx.lineTo(width - padding, height - padding);
             ctx.stroke();
             
-            // Draw cell count line (solid)
+            // Draw cell count line
             ctx.beginPath();
             ctx.strokeStyle = '#4CAF50'; // Green
             ctx.lineWidth = 2;
-            ctx.setLineDash([]); // Solid line
             
             sim.history.forEach((point, index) => {
                 const x = padding + (point.time / maxTime) * (width - 2 * padding);
                 
-                // Apply log scale if enabled
                 let y;
-                if (useLogScale && point.cells > 0) {
-                    const logMax = Math.log(maxCells);
-                    const logValue = Math.log(point.cells);
-                    y = height - padding - (logValue / logMax) * (height - 2 * padding);
-                } else {
-                    y = height - padding - (point.cells / maxCells) * (height - 2 * padding);
-                }
+                y = height - padding - (point.cells / maxCells) * (height - 2 * padding);
                 
                 if (index === 0) {
                     ctx.moveTo(x, y);
@@ -1364,12 +1144,11 @@
             
             ctx.stroke();
             
-            // Draw default food count line (dashed)
+            // Draw default food count line if enabled
             if (showFoodCount) {
                 ctx.beginPath();
                 ctx.strokeStyle = '#FFE66D'; // Yellow
                 ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]); // Dashed line
                 
                 sim.history.forEach((point, index) => {
                     const x = padding + (point.time / maxTime) * (width - 2 * padding);
@@ -1384,11 +1163,10 @@
                 
                 ctx.stroke();
                 
-                // Draw oil food count line (dotted)
+                // Draw oil food count line
                 ctx.beginPath();
                 ctx.strokeStyle = '#FF9AA2'; // Pink
                 ctx.lineWidth = 2;
-                ctx.setLineDash([2, 2]); // Dotted line
                 
                 sim.history.forEach((point, index) => {
                     const x = padding + (point.time / maxTime) * (width - 2 * padding);
@@ -1402,20 +1180,19 @@
                 });
                 
                 ctx.stroke();
-                ctx.setLineDash([]); // Reset to solid
             }
             
             // Draw legend
             ctx.fillStyle = '#4CAF50';
-            ctx.font = '14px Arial';
-            ctx.fillText('Cells', width - 90, 20);
+            ctx.font = '12px Arial';
+            ctx.fillText('Cells', width - 80, 20);
             
             if (showFoodCount) {
                 ctx.fillStyle = '#FFE66D';
-                ctx.fillText('Sucrose', width - 90, 40);
+                ctx.fillText('Default Food', width - 80, 40);
                 
                 ctx.fillStyle = '#FF9AA2';
-                ctx.fillText('Hydrocarbons', width - 90, 60);
+                ctx.fillText('Oil Food', width - 80, 60);
             }
         }
         
@@ -1521,7 +1298,7 @@
             sim.running = true;
             updateStatusIndicator(windowKey);
             
-            // Record initial food counts when starting AND add food if needed
+            // Record initial food counts when starting
             if (!sim.dataGenerated) {
                 sim.initialFoodCounts = {default: 0, oil: 0};
                 
@@ -1534,31 +1311,9 @@
                 
                 if (foodLoadState[windowKey].default) {
                     sim.initialFoodCounts.default = foodCountPerType;
-                    // Add default food if not already present
-                    if (!sim.foods.some(food => food.type === 'default')) {
-                        for (let i = 0; i < foodCountPerType; i++) {
-                            sim.foods.push({
-                                x: Math.random() * canvases[windowKey].sim.width,
-                                y: Math.random() * canvases[windowKey].sim.height,
-                                type: 'default',
-                                consumed: false
-                            });
-                        }
-                    }
                 }
                 if (foodLoadState[windowKey].oil) {
                     sim.initialFoodCounts.oil = foodCountPerType;
-                    // Add oil food if not already present
-                    if (!sim.foods.some(food => food.type === 'oil')) {
-                        for (let i = 0; i < foodCountPerType; i++) {
-                            sim.foods.push({
-                                x: Math.random() * canvases[windowKey].sim.width,
-                                y: Math.random() * canvases[windowKey].sim.height,
-                                type: 'oil',
-                                consumed: false
-                            });
-                        }
-                    }
                 }
             }
             
@@ -1567,8 +1322,6 @@
                 sim.animationId = requestAnimationFrame((timestamp) => simulationLoop(windowKey, timestamp));
             }
         }
-
-
         
         // Pause simulation
         function pauseSimulation(windowKey) {
@@ -1605,11 +1358,6 @@
             Object.keys(simulations).forEach(key => drawGraph(key));
         });
         
-        //document.getElementById('logScaleCheckbox').addEventListener('change', function() {
-        //    useLogScale = this.checked;
-        //    Object.keys(simulations).forEach(key => drawGraph(key));
-        //});
-        
         // Check if all simulations are stopped and show quiz
         function checkAndShowQuiz() {
             const allStopped = Object.values(simulations).every(sim => !sim.running);
@@ -1618,124 +1366,23 @@
             }
         }
         
-        // Setup drag and drop for ranking
-        function setupRankingDragAndDrop() {
-            const container = document.getElementById('rankingContainer');
-            let draggedItem = null;
-            
-            // Add event listeners to all ranking items
-            container.querySelectorAll('.ranking-item').forEach(item => {
-                item.addEventListener('dragstart', function(e) {
-                    draggedItem = this;
-                    setTimeout(() => this.classList.add('dragging'), 0);
-                });
-                
-                item.addEventListener('dragend', function() {
-                    this.classList.remove('dragging');
-                    draggedItem = null;
-                    
-                    // Update numbering after drag
-                    updateRankingNumbers();
-                });
-                
-                item.addEventListener('dragover', function(e) {
-                    e.preventDefault();
-                    const rect = this.getBoundingClientRect();
-                    const midpoint = rect.top + rect.height / 2;
-                    
-                    // Insert placeholder before or after based on mouse position
-                    if (e.clientY < midpoint) {
-                        container.insertBefore(getPlaceholder(), this);
-                    } else {
-                        container.insertBefore(getPlaceholder(), this.nextSibling);
-                    }
-                });
-            });
-            
-            // Create a placeholder element
-            function getPlaceholder() {
-                let placeholder = document.querySelector('.drag-placeholder');
-                if (!placeholder) {
-                    placeholder = document.createElement('div');
-                    placeholder.className = 'drag-placeholder';
-                }
-                return placeholder;
-            }
-            
-            // Handle drop container
-            container.addEventListener('dragover', function(e) {
-                e.preventDefault();
-            });
-            
-            container.addEventListener('drop', function(e) {
-                e.preventDefault();
-                const placeholder = document.querySelector('.drag-placeholder');
-                
-                if (placeholder && draggedItem) {
-                    container.insertBefore(draggedItem, placeholder);
-                    container.removeChild(placeholder);
-                    updateRankingNumbers();
-                }
-            });
-        }
-        
-        // Update ranking numbers
-        function updateRankingNumbers() {
-            const items = document.querySelectorAll('.ranking-item');
-            items.forEach((item, index) => {
-                item.querySelector('.ranking-number').textContent = index + 1;
-            });
-        }
-        
-        // Populate ranking options in random order
-        function populateRankingOptions() {
-            const container = document.getElementById('rankingContainer');
-            container.innerHTML = ''; // Clear existing options
-            
-            const microbeData = [
-                {type: 'default-only', name: 'Green Circle'},
-                {type: 'oil-prefer-default', name: 'Purple Triangle'},
-                {type: 'default-prefer-oil', name: 'Blue Square'}
-            ];
-            
-            // Shuffle the array
-            const shuffledMicrobes = shuffleArray([...microbeData]);
-            
-            // Populate the container
-            shuffledMicrobes.forEach((microbe, index) => {
-                const item = document.createElement('div');
-                item.className = 'ranking-item';
-                item.setAttribute('data-type', microbe.type);
-                item.draggable = true;
-                item.innerHTML = `
-                    <div class="ranking-number">${index + 1}</div>
-                    <div class="ranking-content">Cell: ${microbe.name}</div>
-                `;
-                container.appendChild(item);
-            });
-        }
-        
         // Quiz functionality
         document.getElementById('submitQuizBtn').addEventListener('click', function() {
-            const rankingItems = document.querySelectorAll('.ranking-item');
-            const userRanking = Array.from(rankingItems).map(item => item.getAttribute('data-type'));
+            const selectedOption = document.querySelector('.quiz-option.selected');
+            if (!selectedOption) {
+                alert('Please select an option!');
+                return;
+            }
             
-            // Correct ranking from least to most effective for oil spill cleanup:
-            // default-only (least) -> oil-prefer-default (middle) -> default-prefer-oil (most)
-            const correctRanking = ['default-only', 'oil-prefer-default', 'default-prefer-oil'];
-            
-            // Check if user ranking matches correct ranking
-            const isCorrect = JSON.stringify(userRanking) === JSON.stringify(correctRanking);
+            const userAnswer = selectedOption.getAttribute('data-type');
+            const isCorrect = userAnswer === userCellType;
             
             const resultSection = document.getElementById('quizResult');
             resultSection.innerHTML = `
-                <p>${isCorrect ? 'Correct ranking!' : 'Incorrect ranking.'}</p>
-                <p><strong>Explanation:</strong></p>
-                <ul style="text-align: left">
-                    <li>Green Circle: only eats sucrose, and therefore won't degrade oil.</li>
-                    <li>Purple Triangle: eats hydrocarbons, but only after sucrose is depleted.</li>
-                    <li>Blue Square: prefers hydrocarbons over sucrose, and is therefore the most effective bioremediator.</li>
-                </ul>
+                <h3>Quiz Result</h3>
+                <p>Your answer: <strong>${formatCellTypeName(userAnswer)}</strong></p>
+                <p>Actual cell type: <strong>${formatCellTypeName(userCellType)}</strong></p>
+                <p>${isCorrect ? '✅ Correct!' : '❌ Incorrect!'}</p>
                 <button id="runNewExperimentBtn">Run New Experiment</button>
             `;
             resultSection.className = 'result-section show';
@@ -1746,12 +1393,30 @@
             });
         });
         
-        // Initialize everything when the page loads
+        // Quiz option selection
+        document.querySelectorAll('.quiz-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.quiz-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                this.classList.add('selected');
+            });
+        });
+        
+        // Format cell type name for display
+        function formatCellTypeName(type) {
+            switch (type) {
+                case 'default-only': return 'Cell Type A: Eats only Default food';
+                case 'default-prefer-oil': return 'Cell Type B: Eats Default but prefers Oil';
+                case 'oil-prefer-default': return 'Cell Type C: Eats Oil but prefers Default';
+                case 'both-no-preference': return 'Cell Type D: Eats both with no preference';
+                default: return type;
+            }
+        }
+        
+        // Initialize all simulations
         window.addEventListener('load', function() {
             resizeCanvases();
-            updateCellIdDisplays();
-            populateRankingOptions();
-            setupRankingDragAndDrop();
             Object.keys(simulations).forEach(key => initSimulation(key));
         });
     </script>
