@@ -1573,20 +1573,25 @@
             const isMobile = window.innerWidth <= 767;
             
             if (isMobile) {
-                // Add up/down buttons for mobile
                 const container = document.getElementById('rankingContainer');
-                const items = container.querySelectorAll('.ranking-item');
+                const items = Array.from(container.querySelectorAll('.ranking-item'));
                 
                 items.forEach((item, index) => {
+                    // Remove any existing buttons first to prevent duplicates
+                    const existingButtons = item.querySelectorAll('.mobile-reorder-btn');
+                    existingButtons.forEach(btn => btn.remove());
+                    
                     // Add move up button (except for first item)
                     if (index > 0) {
                         const upBtn = document.createElement('button');
                         upBtn.className = 'mobile-reorder-btn';
                         upBtn.textContent = '↑';
-                        upBtn.onclick = function() {
+                        upBtn.onclick = function(e) {
+                            e.stopPropagation(); // Prevent event bubbling
                             const prevSibling = item.previousElementSibling;
                             if (prevSibling) {
                                 container.insertBefore(item, prevSibling);
+                                setupMobileFriendlyRanking(); // Re-setup buttons
                                 updateRankingNumbers();
                             }
                         };
@@ -1598,10 +1603,12 @@
                         const downBtn = document.createElement('button');
                         downBtn.className = 'mobile-reorder-btn';
                         downBtn.textContent = '↓';
-                        downBtn.onclick = function() {
+                        downBtn.onclick = function(e) {
+                            e.stopPropagation(); // Prevent event bubbling
                             const nextSibling = item.nextElementSibling;
                             if (nextSibling) {
                                 container.insertBefore(nextSibling, item);
+                                setupMobileFriendlyRanking(); // Re-setup buttons
                                 updateRankingNumbers();
                             }
                         };
@@ -1610,7 +1617,7 @@
                 });
             }
         }
-        
+
         // Setup drag and drop for ranking
         function setupRankingDragAndDrop() {
             const container = document.getElementById('rankingContainer');
@@ -1709,10 +1716,12 @@
             
             // Add mobile buttons after population
             if (window.innerWidth <= 767) {
-                setupMobileFriendlyRanking();
+                setTimeout(() => {
+                    setupMobileFriendlyRanking();
+                }, 100);
             }
         }
-                
+
         // Quiz functionality
         document.getElementById('submitQuizBtn').addEventListener('click', function() {
             const rankingItems = document.querySelectorAll('.ranking-item');
