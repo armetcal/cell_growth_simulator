@@ -162,13 +162,13 @@
         }
         
         .food-default {
-            background-color: #FFE66D;
-            color: #333;
+            background-color: #f5ebb9;
+            color: #181818;
         }
         
         .food-oil {
-            background-color: #FF9AA2;
-            color: #333;
+            background-color: #ba0010;
+            color: #ffffff;
         }
         
         .food-none {
@@ -190,7 +190,7 @@
         .graphCanvas {
             background-color: #1a1a2e;
             height: 200px;
-            border-top: 1px solid white; /* White line divider */
+            border-top: 2px solid white; /* White line divider */
         }
         
         .food-types-container {
@@ -209,12 +209,12 @@
         }
         
         .food-default-type {
-            background-color: #FFE66D;
+            background-color: #f7f3dc;
             color: #333;
         }
         
         .food-oil-type {
-            background-color: #FF9AA2;
+            background-color: #fb2839;
             color: #333;
         }
         
@@ -470,7 +470,18 @@
             }
         }
 
-        .simulation-window, .panel {
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            flex: 1;
+            /* display: flex; */
+            /* flex-direction: column; */
+            min-width: 250px;
+        }
+
+        .simulation-window {
             background: white;
             border-radius: 8px;
             padding: 10px;
@@ -481,6 +492,7 @@
             min-width: 0; /* Prevents flex items from overflowing */
         }
 
+
         .simulation-header {
             flex-shrink: 0;
         }
@@ -489,6 +501,61 @@
             width: 100%;
             height: 200px;
             flex-shrink: 0;
+        }
+
+        /* Mobile-friendly ranking system */
+        .ranking-item {
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            cursor: grab;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            touch-action: manipulation; /* Better touch response */
+        }
+
+        /* Larger touch targets for mobile */
+        @media (max-width: 767px) {
+            .ranking-item {
+                padding: 20px 15px;
+                min-height: 60px;
+                align-items: center;
+            }
+            
+            .ranking-number {
+                min-width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.3em;
+            }
+            
+            .ranking-content {
+                font-size: 1.1em;
+                flex: 1;
+            }
+        }
+
+        /* Alternative mobile interaction - buttons for reordering */
+        .mobile-reorder-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        @media (max-width: 767px) {
+            .mobile-reorder-btn {
+                display: inline-block;
+            }
         }
     </style>
 </head>
@@ -512,7 +579,7 @@
         <div class="simulation-container">
             <div class="simulation-window">
                 <div class="simulation-header">
-                    <div class="window-title">Experiment A</div>
+                    <div class="window-title">Sample A</div>
                     <div class="status-indicator status-paused" id="statusA">PAUSED</div>
                 </div>
                 <canvas id="simulationCanvasA" class="simulationCanvas"></canvas>
@@ -522,7 +589,7 @@
             
             <div class="simulation-window">
                 <div class="simulation-header">
-                    <div class="window-title">Experiment B</div>
+                    <div class="window-title">Sample B</div>
                     <div class="status-indicator status-paused" id="statusB">PAUSED</div>
                 </div>
                 <canvas id="simulationCanvasB" class="simulationCanvas"></canvas>
@@ -532,7 +599,7 @@
             
             <div class="simulation-window">
                 <div class="simulation-header">
-                    <div class="window-title">Experiment C</div>
+                    <div class="window-title">Sample C</div>
                     <div class="status-indicator status-paused" id="statusC">PAUSED</div>
                 </div>
                 <canvas id="simulationCanvasC" class="simulationCanvas"></canvas>
@@ -543,7 +610,7 @@
         
         <div class="panel">
             <h2>Instructions</h2>
-            <p>Each experiment contains a different microbial strain. Two food sources are available:</p>
+            <p>Each sample contains a different microbial strain, as well as two substrates:</p>
             <div class="food-indicator food-default" id="Sucrose">Sucrose (Sugar source)</div>
             <div class="food-indicator food-oil" id="Hydrocarbons">Hydrocarbons (Oil contaminants)</div>
 
@@ -552,12 +619,12 @@
             <div class="controls">
                 <button id="startAllBtn">Start</button>
                 <button id="pauseAllBtn">Pause</button>
-                <button id="resetAllBtn">Reset Current Experiment</button>
+                <button id="resetAllBtn">Reset Experiment</button>
             </div>
             
             <div class="controls">
                 <label>
-                    <input type="checkbox" id="showFoodCheckbox" checked> Show Food Count
+                    <input type="checkbox" id="showFoodCheckbox" checked> Show Substrate Count
                 </label>
             </div>
         </div>
@@ -650,9 +717,21 @@
         }
         
         // Call on load and resize
-        window.addEventListener('load', resizeCanvases);
+        window.addEventListener('load', function() {
+            resizeCanvases();
+            updateCellIdDisplays();
+            populateRankingOptions();
+
+            // Use mobile-friendly ranking system
+            setTimeout(() => {
+                setupMobileFriendlyRanking();
+                setupRankingDragAndDrop(); // Keep drag-and-drop for desktop
+            }, 100);
+
+            Object.keys(simulations).forEach(key => initSimulation(key));
+        });
         window.addEventListener('resize', resizeCanvases);
-        
+
         // Constants
         const CELL_SPEED = 80; // Constant speed for all cells
         const TOTAL_FOOD_COUNT = 100; // Total food particles per experiment
@@ -1178,7 +1257,7 @@
                 if (!food.consumed) {
                     ctx.beginPath();
                     ctx.arc(food.x, food.y, 3, 0, Math.PI * 2);
-                    ctx.fillStyle = food.type === 'default' ? '#FFE66D' : '#FF9AA2';
+                    ctx.fillStyle = food.type === 'default' ? '#f5ebb9' : '#fb2839';
                     ctx.fill();
                 }
             });
@@ -1251,7 +1330,7 @@
             // Draw cell count line (solid)
             ctx.beginPath();
             ctx.strokeStyle = '#4CAF50'; // Green
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 3;
             ctx.setLineDash([]); // Solid line
             
             sim.history.forEach((point, index) => {
@@ -1279,8 +1358,8 @@
             // Draw default food count line (dashed)
             if (showFoodCount) {
                 ctx.beginPath();
-                ctx.strokeStyle = '#FFE66D'; // Yellow
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#f5ebb9'; // Light Yellow
+                ctx.lineWidth = 3;
                 ctx.setLineDash([5, 5]); // Dashed line
                 
                 sim.history.forEach((point, index) => {
@@ -1298,8 +1377,8 @@
                 
                 // Draw oil food count line (dotted)
                 ctx.beginPath();
-                ctx.strokeStyle = '#FF9AA2'; // Pink
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#fb2839'; // Red
+                ctx.lineWidth = 3;
                 ctx.setLineDash([2, 2]); // Dotted line
                 
                 sim.history.forEach((point, index) => {
@@ -1319,15 +1398,15 @@
             
             // Draw legend
             ctx.fillStyle = '#4CAF50';
-            ctx.font = '14px Arial';
-            ctx.fillText('Cells', width - 90, 20);
+            ctx.font = '16px Arial';
+            ctx.fillText('Cells', width - 100, 20);
             
             if (showFoodCount) {
-                ctx.fillStyle = '#FFE66D';
-                ctx.fillText('Sucrose', width - 90, 40);
+                ctx.fillStyle = '#f5ebb9';
+                ctx.fillText('Sucrose', width - 100, 40);
                 
-                ctx.fillStyle = '#FF9AA2';
-                ctx.fillText('Hydrocarbons', width - 90, 60);
+                ctx.fillStyle = '#fb2839';
+                ctx.fillText('Hydrocarbons', width - 100, 60);
             }
         }
         
@@ -1488,6 +1567,49 @@
                 document.getElementById('quizSection').style.display = 'block';
             }
         }
+
+        function setupMobileFriendlyRanking() {
+            // Check if we're on a mobile device
+            const isMobile = window.innerWidth <= 767;
+            
+            if (isMobile) {
+                // Add up/down buttons for mobile
+                const container = document.getElementById('rankingContainer');
+                const items = container.querySelectorAll('.ranking-item');
+                
+                items.forEach((item, index) => {
+                    // Add move up button (except for first item)
+                    if (index > 0) {
+                        const upBtn = document.createElement('button');
+                        upBtn.className = 'mobile-reorder-btn';
+                        upBtn.textContent = '↑';
+                        upBtn.onclick = function() {
+                            const prevSibling = item.previousElementSibling;
+                            if (prevSibling) {
+                                container.insertBefore(item, prevSibling);
+                                updateRankingNumbers();
+                            }
+                        };
+                        item.appendChild(upBtn);
+                    }
+                    
+                    // Add move down button (except for last item)
+                    if (index < items.length - 1) {
+                        const downBtn = document.createElement('button');
+                        downBtn.className = 'mobile-reorder-btn';
+                        downBtn.textContent = '↓';
+                        downBtn.onclick = function() {
+                            const nextSibling = item.nextElementSibling;
+                            if (nextSibling) {
+                                container.insertBefore(nextSibling, item);
+                                updateRankingNumbers();
+                            }
+                        };
+                        item.appendChild(downBtn);
+                    }
+                });
+            }
+        }
         
         // Setup drag and drop for ranking
         function setupRankingDragAndDrop() {
@@ -1584,8 +1706,13 @@
                 `;
                 container.appendChild(item);
             });
+            
+            // Add mobile buttons after population
+            if (window.innerWidth <= 767) {
+                setupMobileFriendlyRanking();
+            }
         }
-        
+                
         // Quiz functionality
         document.getElementById('submitQuizBtn').addEventListener('click', function() {
             const rankingItems = document.querySelectorAll('.ranking-item');
